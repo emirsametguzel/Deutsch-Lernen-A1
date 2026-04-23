@@ -180,7 +180,7 @@
                 currentAuthUser = user;
                 return true;
             } catch (error) {
-                console.warn('Auth token alınamadı:', error);
+                console.warn('Auth-Token konnte nicht geholt werden:', error);
                 return false;
             }
         }
@@ -190,7 +190,7 @@
             for (let attempt = 0; attempt < 2; attempt += 1) {
                 try {
                     const ready = await ensureFirestoreAuthReady(attempt === 1);
-                    if (!ready) throw new Error('Oturum doğrulanamadı. Lütfen tekrar giriş yapın.');
+                    if (!ready) throw new Error('Die Anmeldung ist nicht gültig. Bitte melden Sie sich erneut an.');
                     return await queryFactory().get();
                 } catch (error) {
                     lastError = error;
@@ -203,7 +203,7 @@
                     throw error;
                 }
             }
-            throw lastError || new Error('Sorgu başarısız.');
+            throw lastError || new Error('Abfrage fehlgeschlagen.');
         }
 
         function computeIsTeacher() {
@@ -231,7 +231,7 @@
                 adminEmails = emails.length ? emails : [...FALLBACK_ADMIN_EMAILS];
                 return adminEmails;
             } catch (e) {
-                console.warn('Admin emails yüklenemedi, fallback kullanılacak:', e);
+                    console.warn('Admin-E-Mails konnten nicht geladen werden, Fallback wird genutzt:', e);
                 adminEmails = [...FALLBACK_ADMIN_EMAILS];
                 return adminEmails;
             }
@@ -295,20 +295,20 @@
         }
 
         async function loginWithEmailPassword() {
-            if (!auth) return setAuthMessage('Auth servisi hazır değil.');
+            if (!auth) return setAuthMessage('Der Anmeldedienst ist nicht bereit.');
             const email = (document.getElementById('loginEmail')?.value || '').trim();
             const password = document.getElementById('loginPassword')?.value || '';
-            if (!email || !password) return setAuthMessage('E-posta ve şifre zorunlu.');
+            if (!email || !password) return setAuthMessage('E-Mail und Passwort sind nötig.');
             try {
                 await auth.signInWithEmailAndPassword(email, password);
                 setAuthMessage('');
             } catch (e) {
-                setAuthMessage(`Giriş başarısız: ${e.message}`);
+                setAuthMessage(`Anmeldung fehlgeschlagen: ${e.message}`);
             }
         }
 
         async function loginWithGoogle() {
-            if (!auth || !googleProvider) return setAuthMessage('Google Auth hazır değil.');
+            if (!auth || !googleProvider) return setAuthMessage('Google-Anmeldung ist nicht bereit.');
             try {
                 const result = await auth.signInWithPopup(googleProvider);
                 const user = result.user;
@@ -317,24 +317,24 @@
                 }
                 setAuthMessage('');
             } catch (e) {
-                setAuthMessage(`Google giriş başarısız: ${e.message}`);
+                setAuthMessage(`Google-Anmeldung fehlgeschlagen: ${e.message}`);
             }
         }
 
         async function sendPasswordReset() {
-            if (!auth) return setAuthMessage('Auth servisi hazır değil.');
+            if (!auth) return setAuthMessage('Der Anmeldedienst ist nicht bereit.');
             const email = (document.getElementById('resetEmail')?.value || '').trim();
-            if (!email) return setAuthMessage('E-posta giriniz.');
+            if (!email) return setAuthMessage('Bitte E-Mail eingeben.');
             try {
                 await auth.sendPasswordResetEmail(email);
-                setAuthMessage('Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.', 'success');
+                setAuthMessage('Der Link zum Zurücksetzen wurde an Ihre E-Mail gesendet.', 'success');
             } catch (e) {
-                setAuthMessage(`Sıfırlama başarısız: ${e.message}`);
+                setAuthMessage(`Zurücksetzen fehlgeschlagen: ${e.message}`);
             }
         }
 
         async function registerWithEmailPassword() {
-            if (!auth) return setAuthMessage('Auth servisi hazır değil.');
+            if (!auth) return setAuthMessage('Der Anmeldedienst ist nicht bereit.');
 
             const firstName = (document.getElementById('regFirstName')?.value || '').trim();
             const lastName = (document.getElementById('regLastName')?.value || '').trim();
@@ -345,13 +345,13 @@
             const password2 = document.getElementById('regPassword2')?.value || '';
 
             if (!firstName || !lastName || !email || !className || !number || !password || !password2) {
-                return setAuthMessage('Tüm kayıt alanları zorunludur.');
+                return setAuthMessage('Bitte alle Felder ausfüllen.');
             }
             if (!isAllowedClassName(className)) {
-                return setAuthMessage('Sınıf seçimi geçersiz. Lütfen listeden seçim yapın.');
+                return setAuthMessage('Ungültige Klasse. Bitte aus der Liste wählen.');
             }
-            if (password.length < 6) return setAuthMessage('Şifre en az 6 karakter olmalı.');
-            if (password !== password2) return setAuthMessage('Şifreler eşleşmiyor.');
+            if (password.length < 6) return setAuthMessage('Das Passwort braucht mindestens 6 Zeichen.');
+            if (password !== password2) return setAuthMessage('Die Passwörter sind nicht gleich.');
 
             try {
                 const cred = await auth.createUserWithEmailAndPassword(email, password);
@@ -360,7 +360,7 @@
                 }
                 setAuthMessage('');
             } catch (e) {
-                setAuthMessage(`Kayıt başarısız: ${e.message}`);
+                setAuthMessage(`Registrierung fehlgeschlagen: ${e.message}`);
             }
         }
 
@@ -375,7 +375,7 @@
 
         async function initAuthGate() {
             if (!auth) {
-                setAuthMessage('Firebase Auth başlatılamadı.');
+                setAuthMessage('Firebase Auth konnte nicht starten.');
                 setAppLocked(true);
                 return;
             }
@@ -411,7 +411,7 @@
                     }
                 } catch (e) {
                     console.error('Auth setup error:', e);
-                    setAuthMessage(`Hesap hazırlanamadı: ${e.message}`);
+                    setAuthMessage(`Konto konnte nicht vorbereitet werden: ${e.message}`);
                     setAppLocked(true);
                 }
             });
@@ -421,7 +421,7 @@
         // Load content from Firestore and convert back from safe format
         function loadContentFromFirestore() {
             if (!db) {
-                console.log('ℹ️ Firebase bağlı değil, local data kullanılıyor');
+                console.log('ℹ️ Kein Firebase, lokale Daten werden genutzt');
                 return;
             }
             
@@ -431,7 +431,7 @@
                     .onSnapshot((doc) => {
                         if (doc.exists) {
                             const firestoreData = doc.data();
-                            console.log('📥 Firestore\'dan veri alındı');
+                            console.log('📥 Daten von Firestore geladen');
                             
                             // Merge Firestore content with local data
                             Object.keys(firestoreData).forEach(unitNum => {
@@ -447,7 +447,6 @@
                                     if (fsUnit.kommunikation) {
                                         unitsData[unitNum].kommunikation.skills = fsUnit.kommunikation.skills || unitsData[unitNum].kommunikation.skills;
                                         unitsData[unitNum].kommunikation.examples = fsUnit.kommunikation.examples || unitsData[unitNum].kommunikation.examples;
-                                        unitsData[unitNum].kommunikation.prompt = fsUnit.kommunikation.prompt || unitsData[unitNum].kommunikation.prompt;
                                         
                                         // Convert dialogues back if needed
                                         if (fsUnit.kommunikation.dialogues && Array.isArray(fsUnit.kommunikation.dialogues)) {
@@ -468,30 +467,30 @@
                                         unitsData[unitNum].grammatik = convertGrammatikFromFirestore(fsUnit.grammatik);
                                     }
                                     
-                                    console.log(`   ✅ Ünite ${unitNum} güncellendi`);
+                                    console.log(`   ✅ Themenkreis ${unitNum} aktualisiert`);
                                 }
                             });
                             
-                            console.log('✅ İçerik Firestore\'dan güncellendi');
+                            console.log('✅ Inhalte von Firestore aktualisiert');
                             
                             // Refresh current view if needed
                             if (currentView === 'unit' && currentUnit) {
                                 showUnit(currentUnit);
                             }
                         } else {
-                            console.log('ℹ️ Firestore\'da içerik yok, varsayılan data kullanılıyor');
+                            console.log('ℹ️ Keine Inhalte in Firestore, Standarddaten werden genutzt');
                         }
                     }, (error) => {
-                        console.error('❌ İçerik yükleme hatası:', error);
+                        console.error('❌ Fehler beim Laden der Inhalte:', error);
                     });
             } catch (error) {
-                console.error('❌ Firestore listener hatası:', error);
+                console.error('❌ Firestore-Listener-Fehler:', error);
             }
         }
 
         async function ensureStudentRecordLinked(user, registrationPayload) {
             if (!user || !db) {
-                throw new Error('Kullanıcı ya da veritabanı bağlantısı yok.');
+                throw new Error('Kein Nutzer oder keine Datenbankverbindung.');
             }
 
             const firstName = (registrationPayload?.firstName || '').trim();
@@ -514,9 +513,9 @@
 
             if (!docRef) {
                 // For returning users without payload, create lightweight record from auth email prefix
-                const fallbackName = regFullName || (user.displayName ? user.displayName.trim() : user.email?.split('@')[0] || 'Öğrenci');
+                const fallbackName = regFullName || (user.displayName ? user.displayName.trim() : user.email?.split('@')[0] || 'Schüler/in');
                 const fallbackParts = fallbackName.split(' ');
-                const fallbackFirst = firstName || fallbackParts[0] || 'Öğrenci';
+                const fallbackFirst = firstName || fallbackParts[0] || 'Schüler/in';
                 const fallbackLast = lastName || fallbackParts.slice(1).join(' ') || '-';
 
                 docRef = await db.collection('students').add({
@@ -578,28 +577,28 @@
             modal.className = 'modal-overlay';
             modal.innerHTML = `
                 <div class="modal">
-                    <h2>👨‍🎓 Profil Bilgileri</h2>
+                    <h2>👨‍🎓 Profil</h2>
                     <form id="studentForm" onsubmit="saveStudentInfo(event)">
                         <div class="form-group">
-                            <label>Ad / Vorname:</label>
+                            <label>Vorname:</label>
                             <input type="text" id="studentFirstName" required>
                         </div>
                         <div class="form-group">
-                            <label>Soyad / Nachname:</label>
+                            <label>Nachname:</label>
                             <input type="text" id="studentLastName" required>
                         </div>
                         <div class="form-group">
-                            <label>Sınıf / Klasse:</label>
+                            <label>Klasse:</label>
                             <select id="studentClass" required>
                                 ${ALLOWED_CLASSES.map((className) => `<option value="${className}">${className}</option>`).join('')}
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>Okul Numarası / Schulnummer:</label>
+                            <label>Schulnummer:</label>
                             <input type="text" id="studentNumber" required>
                         </div>
                         <button type="submit" class="btn btn-primary" style="width: 100%;">
-                            Kaydet / Speichern
+                            Speichern
                         </button>
                     </form>
                 </div>
@@ -616,7 +615,7 @@
             const number = document.getElementById('studentNumber').value.trim();
             const fullName = `${firstName} ${lastName}`;
             if (!className) {
-                alert('Lütfen geçerli bir sınıf seçin.');
+                alert('Bitte eine gültige Klasse wählen.');
                 return;
             }
             
@@ -646,7 +645,7 @@
                         lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
                     });
                 } catch (error) {
-                    console.error('❌ Firestore kayıt hatası:', error);
+                    console.error('❌ Firestore-Speichern fehlgeschlagen:', error);
                 }
             }
             
@@ -663,9 +662,9 @@
                 const email = normalizeEmail(currentAuthUser?.email || studentInfo?.email || '');
                 display.innerHTML = `
                     <div class="student-info" onclick="editStudentInfo()">
-                        👤 ${studentInfo.fullName} | Sınıf: ${studentInfo.class} | No: ${studentInfo.number}
+                        👤 ${studentInfo.fullName} | Klasse: ${studentInfo.class} | Nr.: ${studentInfo.number}
                         ${email ? `<span style="opacity:.9; margin-left:.5rem;">(${email})</span>` : ''}
-                        ${isTeacher ? '<span class="teacher-badge">ÖĞRETMEN</span>' : ''} ✏️
+                        ${isTeacher ? '<span class="teacher-badge">LEHRER/IN</span>' : ''} ✏️
                     </div>
                 `;
             }
@@ -708,9 +707,9 @@
                     lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 
-                console.log('✅ Öğrenci verisi güncellendi');
+                console.log('✅ Schülerdaten aktualisiert');
             } catch (error) {
-                console.error('❌ Firestore güncelleme hatası:', error);
+                console.error('❌ Firestore-Update fehlgeschlagen:', error);
             }
         }
 
@@ -725,7 +724,7 @@
         // Initialize German TTS system
         function initGermanTTS() {
             if (!('speechSynthesis' in window)) {
-                console.error('❌ Bu tarayıcı SpeechSynthesis desteklemiyor');
+                console.error('❌ Dieser Browser unterstützt keine SpeechSynthesis');
                 return;
             }
             
@@ -742,7 +741,7 @@
                     return lang === 'de-de' || lang === 'de-at' || lang === 'de-ch' || lang.startsWith('de-');
                 });
                 
-                console.log('🇩🇪 Almanca sesler:', germanVoices.length);
+                console.log('🇩🇪 Deutsche Stimmen:', germanVoices.length);
                 germanVoices.forEach(v => console.log('   -', v.name, '|', v.lang));
                 
                 if (germanVoices.length > 0) {
@@ -772,9 +771,9 @@
                     
                     germanVoice = germanVoices[0];
                     voicesReady = true;
-                    console.log('✅ Seçilen Almanca ses:', germanVoice.name, '|', germanVoice.lang);
+                    console.log('✅ Gewählte deutsche Stimme:', germanVoice.name, '|', germanVoice.lang);
                 } else {
-                    console.warn('⚠️ Almanca ses bulunamadı! Tarayıcı varsayılanı kullanılacak.');
+                    console.warn('⚠️ Keine deutsche Stimme gefunden, Browser-Standard wird genutzt.');
                     voicesReady = true; // Still ready, will use lang attribute fallback
                 }
             };
@@ -829,7 +828,7 @@
                     .catch(() => tryUrl(urlSecondary))
                     .then(() => true)
                     .catch((e) => {
-                    console.warn('⚠️ Online TTS çalışmadı:', e);
+                    console.warn('⚠️ Online-TTS fehlgeschlagen:', e);
                     return false;
                 });
             } catch (e) {
@@ -881,7 +880,7 @@
 
                     return;
                 } catch (e) {
-                    console.warn('⚠️ SpeechSynthesis kullanılamadı, online TTS deneniyor:', e);
+                    console.warn('⚠️ SpeechSynthesis nicht nutzbar, Online-TTS wird versucht:', e);
                     // fall through to online
                 }
             }
@@ -915,12 +914,12 @@
             mainView.innerHTML = `
                 <div class="fade-in">
                     <div class="home-search">
-                        <div class="home-search-title">🔎 Arama (Ana Sayfa)</div>
+                        <div class="home-search-title">🔎 Suche (Startseite)</div>
                         <div class="home-search-row">
                             <input id="homeSearchInput" class="wortschatz-input" type="text"
-                                   placeholder="Kelime / Türkçe / konu ara... (örn: gehen, akşam, Person)"
+                                   placeholder="Wort oder Thema suchen … (z. B. gehen, Schule)"
                                    oninput="updateHomeSearchResults(this.value)" />
-                            <button class="btn btn-secondary" onclick="clearHomeSearch()">Temizle</button>
+                            <button class="btn btn-secondary" onclick="clearHomeSearch()">Leeren</button>
                         </div>
                     </div>
 
@@ -948,7 +947,7 @@
                 return;
             }
 
-            container.innerHTML = '<div class="dialogue-box">📚 Ödevler yükleniyor...</div>';
+            container.innerHTML = '<div class="dialogue-box">📚 Hausaufgaben werden geladen …</div>';
             try {
                 const currentUid = String(currentAuthUser.uid);
                 const uniqueById = {};
@@ -967,7 +966,7 @@
                     collectDocs(visibleSnap.docs);
                     loaded = true;
                 } catch (errVisible) {
-                    console.warn('visibleTo sorgusu başarısız, target fallback denenecek:', errVisible);
+                    console.warn('visibleTo-Abfrage fehlgeschlagen, Fallback auf target:', errVisible);
                 }
 
                 if (!loaded) {
@@ -985,7 +984,7 @@
                         collectDocs(studentSnap.docs);
                         loaded = true;
                     } catch (errTarget) {
-                        console.warn('target sorgusu başarısız, full read fallback denenecek:', errTarget);
+                        console.warn('target-Abfrage fehlgeschlagen, vollständiger Lesevorgang als Fallback:', errTarget);
                     }
                 }
 
@@ -1012,8 +1011,8 @@
                 if (homeworks.length === 0) {
                     container.innerHTML = `
                         <div class="unit-detail" style="margin-bottom: 1.5rem;">
-                            <h3>📚 Ödevlerim</h3>
-                            <div class="dialogue-box">Henüz size atanmış ödev bulunmuyor.</div>
+                            <h3>📚 Meine Hausaufgaben</h3>
+                            <div class="dialogue-box">Noch keine Hausaufgabe für dich.</div>
                         </div>
                     `;
                     return;
@@ -1025,30 +1024,30 @@
 
                 container.innerHTML = `
                     <div class="unit-detail" style="margin-bottom: 1.5rem;">
-                        <h3>📚 Ödevlerim (${homeworks.length})</h3>
+                        <h3>📚 Meine Hausaufgaben (${homeworks.length})</h3>
                         ${homeworks.map((hw, idx) => {
                             const p = progressRows[idx];
                             const dateLabel = hw.createdAt?.toDate
-                                ? hw.createdAt.toDate().toLocaleString('tr-TR')
+                                ? hw.createdAt.toDate().toLocaleString('de-DE')
                                 : '-';
                             const deadline = parseDeadlineDate(hw.deadlineAt);
-                            const deadlineLabel = deadline ? deadline.toLocaleString('tr-TR') : 'Belirtilmedi';
+                            const deadlineLabel = deadline ? deadline.toLocaleString('de-DE') : 'Keine Frist';
                             const targetLabel = hw.targetType === 'class'
-                                ? `Sınıf: ${escapeHtml(hw.target || '-')}`
-                                : 'Bana özel';
+                                ? `Klasse: ${escapeHtml(hw.target || '-')}`
+                                : 'Nur für mich';
                             const progressLabel = p.isLate
-                                ? `%${p.progressBeforeDeadline} (deadline sabitlendi)`
-                                : `%${p.progressNow} tamamlandı`;
+                                ? `%${p.progressBeforeDeadline} (bis zur Frist)`
+                                : `%${p.progressNow} erledigt`;
                             const progressValue = p.isLate ? p.progressBeforeDeadline : p.progressNow;
                             return `
                                 <div class="dialogue-box" style="margin-bottom: 0.75rem;">
-                                    <strong>${escapeHtml(hw.title || 'Başlıksız Ödev')}</strong><br>
+                                    <strong>${escapeHtml(hw.title || 'Hausaufgabe')}</strong><br>
                                     <div style="margin: 0.35rem 0 0.6rem 0;">${escapeHtml(hw.content || '')}</div>
                                     <small style="opacity: .9;">
-                                        ${targetLabel} | Ünite: ${escapeHtml(String(hw.unitId || '-'))} | Oluşturulma: ${dateLabel} | Deadline: ${deadlineLabel}
+                                        ${targetLabel} | Themenkreis: ${escapeHtml(String(hw.unitId || '-'))} | Erstellt: ${dateLabel} | Frist: ${deadlineLabel}
                                     </small>
                                     <div style="margin-top: .6rem;">
-                                        <div style="font-size:.92rem; margin-bottom:.3rem;">İlerleme: ${progressLabel} (${p.isLate ? p.completedBeforeDeadline : p.completedNow}/${p.totalContents})</div>
+                                        <div style="font-size:.92rem; margin-bottom:.3rem;">Fortschritt: ${progressLabel} (${p.isLate ? p.completedBeforeDeadline : p.completedNow}/${p.totalContents})</div>
                                         <div class="progress-bar" style="height: 10px;">
                                             <div class="progress-fill" style="width: ${progressValue}%;">${progressValue}%</div>
                                         </div>
@@ -1059,8 +1058,8 @@
                     </div>
                 `;
             } catch (error) {
-                console.error('Ödevler yüklenemedi:', error);
-                container.innerHTML = `<div class="dialogue-box">❌ Ödevler yüklenemedi: ${escapeHtml(error.message || 'Bilinmeyen hata')}</div>`;
+                console.error('Hausaufgaben konnten nicht geladen werden:', error);
+                container.innerHTML = `<div class="dialogue-box">❌ Hausaufgaben: ${escapeHtml(error.message || 'Unbekannter Fehler')}</div>`;
             }
         }
 
@@ -1145,7 +1144,7 @@
                         </div>
                     </div>
                     <div style="display:flex; align-items:center; gap:0.6rem;">
-                        <button class="fav-star-btn" title="Favori ekle/çıkar"
+                        <button class="fav-star-btn" title="Favorit an/aus"
                                 onclick="event.stopPropagation(); toggleFavoriteVocab('${escapeJs(m.id)}'); updateHomeSearchResults(document.getElementById('homeSearchInput').value);">
                             ${isFavoriteVocab(m.id) ? '★' : '☆'}
                         </button>
@@ -1157,13 +1156,13 @@
             container.innerHTML = `
                 <div class="home-search-results">
                     <div class="home-search-results-header">
-                        <div><strong>Kelime sonuçları:</strong> ${matches.length}</div>
+                        <div><strong>Wortsuche:</strong> ${matches.length}</div>
                         <div style="color: var(--text-secondary); font-size: 0.95rem;">
-                            ${matches.length > 80 ? 'İlk 80 gösteriliyor' : ''}
+                            ${matches.length > 80 ? 'Erste 80 werden gezeigt' : ''}
                         </div>
                     </div>
                     <div class="home-search-results-list">
-                        ${list || `<div style="padding: 1rem;">Sonuç bulunamadı.</div>`}
+                        ${list || `<div style="padding: 1rem;">Kein Ergebnis.</div>`}
                     </div>
                 </div>
             `;
@@ -1272,7 +1271,7 @@
                         ${komm.skills.map(skill => `<li>${skill}</li>`).join('')}
                     </ul>
                     
-                    <h3>Beispiele / Örnekler:</h3>
+                    <h3>Beispiele:</h3>
                     ${komm.examples.map(ex => `
                         <div class="dialogue-box">
                             ${ex} ${createAudioIcon(ex)}
@@ -1286,10 +1285,6 @@
                             <div>${d.text} ${createAudioIcon(d.text)}</div>
                         </div>
                     `).join('')}
-                    
-                    <h3>Probieren Sie es selbst! / Kendiniz deneyin!</h3>
-                    <p>${komm.prompt}</p>
-                    <textarea class="input-field" rows="4" placeholder="Schreiben Sie hier..."></textarea>
                 `;
             } else if (section === 'wortschatz') {
                 initWortschatzUiState();
@@ -1318,7 +1313,7 @@
                 const currentItem = totalWords > 0 ? items[currentIndex] : null;
 
                 const unitOptions = [
-                    `<option value="all"${String(unitFilter) === 'all' ? ' selected' : ''}>Tüm Üniteler</option>`,
+                    `<option value="all"${String(unitFilter) === 'all' ? ' selected' : ''}>Alle Themenkreise</option>`,
                     ...Object.keys(unitsData).map(u => {
                         const selected = String(unitFilter) === String(u) ? ' selected' : '';
                         return `<option value="${u}"${selected}>Themenkreis ${u} - ${unitsData[u].title}</option>`;
@@ -1326,7 +1321,7 @@
                 ].join('');
 
                 const categoryOptions = [
-                    `<option value="all"${wsState.category === 'all' ? ' selected' : ''}>Tüm Kategoriler</option>`,
+                    `<option value="all"${wsState.category === 'all' ? ' selected' : ''}>Alle Kategorien</option>`,
                     ...categories.map(c => `<option value="${c}"${wsState.category === c ? ' selected' : ''}>${c}</option>`)
                 ].join('');
 
@@ -1336,7 +1331,7 @@
                     <div class="wortschatz-toolbar">
                         <div class="wortschatz-toolbar-row">
                             <input id="wortschatzSearchInput" class="wortschatz-input" type="text" autocomplete="off"
-                                   placeholder="Ara... (örn: gehen / ich / Türkçe)" value="${escapeHtml(wsState.query || '')}"
+                                   placeholder="Suchen … (z. B. gehen, ich)" value="${escapeHtml(wsState.query || '')}"
                                    oninput="setWortschatzQuery(this.value)" />
                             <select class="wortschatz-select" onchange="setWortschatzUnitFilter(this.value)">
                                 ${unitOptions}
@@ -1345,7 +1340,7 @@
                                 ${categoryOptions}
                             </select>
                             <div class="${favToggleClass}" onclick="toggleWortschatzOnlyFavorites()">
-                                ★ Sadece Favoriler
+                                ★ Nur Favoriten
                             </div>
                         </div>
                     </div>
@@ -1353,15 +1348,15 @@
 
                 const emptyHtml = `
                     <div class="dialogue-box" style="margin-top: 1.5rem;">
-                        <strong>Sonuç bulunamadı.</strong><br>
-                        Arama/filtreyi değiştirerek tekrar deneyin.
+                        <strong>Kein Ergebnis.</strong><br>
+                        Bitte Suche oder Filter ändern.
                     </div>
                 `;
 
                 const flashcardHtml = currentItem ? `
                     <div class="flashcard-container">
                         <div style="width: 100%; max-width: 420px; display: flex; justify-content: flex-end; margin-bottom: 0.4rem;">
-                            <button class="fav-star-btn" title="Favori ekle/çıkar"
+                            <button class="fav-star-btn" title="Favorit an/aus"
                                     onclick="event.stopPropagation(); toggleFavoriteVocab('${escapeJs(currentItem.id)}');">
                                 ${isFavoriteVocab(currentItem.id) ? '★' : '☆'}
                             </button>
@@ -1376,7 +1371,7 @@
                                         <span class="audio-icon" onclick="event.stopPropagation(); speakGerman('${escapeJs(currentItem.word)}'); this.classList.add('playing'); setTimeout(() => this.classList.remove('playing'), 1000);"></span>
                                     </div>
                                     <div style="text-align: center; color: var(--text-secondary); margin-top: 1.5rem; font-size: 0.95rem;">
-                                        🔄 Çevirmek için karta tıklayın
+                                        🔄 Karte klicken zum Umdrehen
                                     </div>
                                 </div>
                                 <div class="vocab-card-back">
@@ -1410,7 +1405,7 @@
                         </div>
 
                         <div class="flashcard-hint">
-                            ← → Okları veya klavye tuşlarını kullanarak gezinin
+                            ← → Mit Pfeiltasten oder Tastatur blättern
                         </div>
                     </div>
                 ` : emptyHtml;
@@ -1418,7 +1413,7 @@
                 const resultsPreview = items.slice(0, 60).map((it, idx) => `
                     <div class="wortschatz-result-item" onclick="goToFlashcard(${idx})">
                         <div class="wortschatz-result-left">
-                            <button class="fav-star-btn" title="Favori ekle/çıkar"
+                            <button class="fav-star-btn" title="Favorit an/aus"
                                     onclick="event.stopPropagation(); toggleFavoriteVocab('${escapeJs(it.id)}'); renderSection('wortschatz');">
                                 ${isFavoriteVocab(it.id) ? '★' : '☆'}
                             </button>
@@ -1437,9 +1432,9 @@
                 const resultsHtml = `
                     <div class="wortschatz-results">
                         <div class="wortschatz-results-header">
-                            <div><strong>Sonuçlar:</strong> ${totalWords} kelime</div>
+                            <div><strong>Ergebnisse:</strong> ${totalWords} Wörter</div>
                             <div style="color: var(--text-secondary); font-size: 0.95rem;">
-                                ${totalWords > 60 ? `İlk 60 gösteriliyor` : ` `}
+                                ${totalWords > 60 ? `Erste 60 werden gezeigt` : ` `}
                             </div>
                         </div>
                         <div class="wortschatz-results-list">
@@ -1449,7 +1444,7 @@
                 `;
 
                 content.innerHTML = `
-                    <h2>📚 Wortschatz / Kelime Hazinesi</h2>
+                    <h2>📚 Wortschatz</h2>
                     ${toolbarHtml}
                     ${flashcardHtml}
                     ${resultsHtml}
@@ -1465,7 +1460,7 @@
                 };
             } else if (section === 'grammatik') {
                 content.innerHTML = `
-                    <h2>📖 Grammatik / Dilbilgisi</h2>
+                    <h2>📖 Grammatik</h2>
                     ${unit.grammatik.map((gram, idx) => `
                         <div style="margin: 2rem 0;">
                             <h3 style="color: ${unit.color}">${idx + 1}. ${gram.topic}</h3>
@@ -1482,12 +1477,9 @@
                             </table>
                             
                             <div class="dialogue-box">
-                                <strong>Beispiel / Örnek:</strong><br>
+                                <strong>Beispiel:</strong><br>
                                 ${gram.example} ${createAudioIcon(gram.example)}
                             </div>
-                            
-                            <h4>Mini-Übung:</h4>
-                            <input type="text" class="input-field" placeholder="Schreiben Sie einen Beispielsatz...">
                         </div>
                     `).join('')}
                 `;
@@ -1504,8 +1496,8 @@
             let score = exerciseScores[currentUnit] || 0;
             
             content.innerHTML = `
-                <h2>✏️ Übungen / Alıştırmalar</h2>
-                <div class="score-display" id="exerciseScore">Puan / Points: ${score}</div>
+                <h2>✏️ Übungen</h2>
+                <div class="score-display" id="exerciseScore">Punkte: ${score}</div>
                 <div id="exercisesContainer"></div>
             `;
             
@@ -1546,7 +1538,7 @@
                 const options = [word.tr, ...wrongAnswers].sort(() => 0.5 - Math.random());
                 
                 exercises.push({
-                    question: `"${word.word}" ne anlama gelir?`,
+                    question: `Was bedeutet „${word.word}“?`,
                     options: options,
                     correct: options.indexOf(word.tr)
                 });
@@ -1570,7 +1562,7 @@
             
             if (selectedIdx === correctIdx) {
                 exerciseScores[unitNum] = (exerciseScores[unitNum] || 0) + 1;
-                document.getElementById('exerciseScore').textContent = `Puan / Points: ${exerciseScores[unitNum]}`;
+                document.getElementById('exerciseScore').textContent = `Punkte: ${exerciseScores[unitNum]}`;
                 markContentCompleted(`u${unitNum}:exercise:${exerciseIdx}`, unitNum);
                 saveProgress();
                 updateStudentInFirestore();
@@ -1583,10 +1575,10 @@
             
             content.innerHTML = `
                 <h2>✅ Test - Themenkreis ${currentUnit}</h2>
-                <p style="font-size: 1.1rem;">10 soruyu cevaplayın / Answer 10 questions</p>
+                <p style="font-size: 1.1rem;">Beantworte zehn Fragen.</p>
                 <div id="testContainer"></div>
                 <button class="btn btn-primary" style="margin-top: 2rem; width: 100%;" onclick="submitTest()">
-                    Testi Gönder / Submit Test
+                    Test abschicken
                 </button>
             `;
             
@@ -1628,7 +1620,7 @@
                 const options = [word.tr, ...wrongAnswers].sort(() => 0.5 - Math.random());
                 
                 questions.push({
-                    question: `"${word.word}" kelimesinin Almanca karşılığı nedir?`,
+                    question: `Was bedeutet „${word.word}“?`,
                     options: options,
                     correct: options.indexOf(word.tr)
                 });
@@ -1674,11 +1666,11 @@
             checkCertificateEligibility();
             
             const messages = {
-                100: "Perfekt! / Mükemmel! 🌟",
-                80: "Sehr gut! / Çok iyi! 🎉",
-                60: "Gut! / İyi! 👍",
-                40: "Üben! / Pratik yap! 💪",
-                0: "Versuchen Sie es noch einmal! / Tekrar dene! 🌱"
+                100: "Perfekt! 🌟",
+                80: "Sehr gut! 🎉",
+                60: "Gut! 👍",
+                40: "Weiter üben! 💪",
+                0: "Noch einmal versuchen! 🌱"
             };
             
             let message = messages[0];
@@ -1692,14 +1684,14 @@
             const content = document.getElementById('test-content');
             content.innerHTML = `
                 <div class="test-result fade-in">
-                    <h2>Test Sonucu / Test Result</h2>
+                    <h2>Test-Ergebnis</h2>
                     <div class="test-score">${percentage}%</div>
                     <div class="motivational-message">${message}</div>
                     <p style="font-size: 1.2rem;">
-                        ${correct} / ${questions.length} doğru
+                        ${correct} / ${questions.length} richtig
                     </p>
                     <button class="btn btn-primary" onclick="toggleSection('test')" style="margin-top: 2rem;">
-                        Tekrar dene / Try again
+                        Noch einmal
                     </button>
                 </div>
             `;
@@ -1799,7 +1791,7 @@
             try {
                 localStorage.setItem('favoriteVocabIds', JSON.stringify(Array.from(window.favoriteVocabIds)));
             } catch (e) {
-                console.warn('⚠️ Favoriler kaydedilemedi:', e);
+                console.warn('⚠️ Favoriten konnten nicht gespeichert werden:', e);
             }
             updateFavoritesInFirestoreDebounced();
         }
@@ -1816,7 +1808,7 @@
                         lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
                     });
                 } catch (e) {
-                    console.warn('⚠️ Favoriler Firestore güncellenemedi:', e);
+                    console.warn('⚠️ Favoriten in Firestore konnten nicht aktualisiert werden:', e);
                 }
             }, 600);
         }
@@ -1833,7 +1825,7 @@
                 arr.forEach(id => window.favoriteVocabIds.add(String(id)));
                 saveFavorites(); // persists merged result and schedules Firestore update
             } catch (e) {
-                console.warn('⚠️ Favoriler Firestore’dan okunamadı:', e);
+                console.warn('⚠️ Favoriten konnten nicht aus Firestore gelesen werden:', e);
             }
         }
 
@@ -2049,9 +2041,9 @@
                 <div class="unit-detail fade-in">
                     <h1 style="color: var(--accent-1)">🏆 Global Leaderboard</h1>
                     <p style="font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 2rem;">
-                        Tüm öğrencilerin canlı sıralaması
+                        Live-Rangliste aller Schülerinnen und Schüler
                     </p>
-                    <div class="loading">Veriler yükleniyor</div>
+                    <div class="loading">Daten werden geladen …</div>
                 </div>
             `;
             
@@ -2060,7 +2052,7 @@
                     <div class="unit-detail fade-in">
                         <h1>🏆 Leaderboard</h1>
                         <div class="dialogue-box">
-                            <strong>⚠️ Firebase bağlantısı yapılandırılmamış!</strong>
+                            <strong>⚠️ Firebase ist nicht konfiguriert.</strong>
                         </div>
                     </div>
                 `;
@@ -2084,8 +2076,8 @@
                         renderLeaderboard(students);
                     });
             } catch (error) {
-                console.error('❌ Leaderboard yüklenemedi:', error);
-                mainView.innerHTML += `<div class="dialogue-box"><strong>❌ Hata:</strong> ${error.message}</div>`;
+                console.error('❌ Leaderboard konnte nicht geladen werden:', error);
+                mainView.innerHTML += `<div class="dialogue-box"><strong>❌ Fehler:</strong> ${error.message}</div>`;
             }
         }
 
@@ -2097,19 +2089,19 @@
                 <div class="unit-detail fade-in">
                     <h1 style="color: var(--accent-1)">🏆 Global Leaderboard</h1>
                     <p style="font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 2rem;">
-                        Toplam ${students.length} öğrenci
+                        Insgesamt ${students.length} Schülerinnen und Schüler
                     </p>
                     
                     <table class="leaderboard-table">
                         <thead>
                             <tr>
-                                <th>Sıra</th>
-                                <th>Ad Soyad</th>
-                                <th>Sınıf</th>
-                                <th>No</th>
-                                <th>Ünite</th>
-                                <th>Ort. %</th>
-                                <th>Puan</th>
+                                <th>Platz</th>
+                                <th>Name</th>
+                                <th>Klasse</th>
+                                <th>Nr.</th>
+                                <th>Themenkreise</th>
+                                <th>Ø %</th>
+                                <th>Punkte</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -2126,7 +2118,7 @@
                                         <td>${student.fullName} ${isCurrentUser ? '👤' : ''}</td>
                                         <td>${student.class}</td>
                                         <td>${student.number}</td>
-                                        <td>${(student.completedUnits || []).length} / 8</td>
+                                        <td>${(student.completedUnits || []).length} / 9</td>
                                         <td>${student.averageScore || 0}%</td>
                                         <td><strong>${student.totalPoints || 0}</strong></td>
                                     </tr>
@@ -2136,7 +2128,7 @@
                     </table>
                     
                     <button class="btn btn-secondary" onclick="showHome()" style="margin-top: 2rem;">
-                        🏠 Ana Sayfa
+                        🏠 Startseite
                     </button>
                 </div>
             `;
@@ -2148,17 +2140,18 @@
             updateBreadcrumb();
             
             if (!studentInfo) {
-                alert('Lütfen önce öğrenci bilgilerinizi girin!');
+                alert('Bitte zuerst deine Profildaten eingeben.');
                 return;
             }
             
             const completedUnits = Object.keys(testScores).filter(key => testScores[key] > 0).length;
+            const totalUnitCount = Object.keys(unitsData).length;
             const totalPoints = Object.values(exerciseScores).reduce((a, b) => a + b, 0);
             const avgScore = completedUnits > 0 
                 ? Math.round(Object.values(testScores).reduce((a, b) => a + b, 0) / completedUnits)
                 : 0;
             
-            const badges = calculateBadges(completedUnits, avgScore, totalPoints);
+            const badges = calculateBadges(completedUnits, avgScore, totalPoints, totalUnitCount);
             
             const mainView = document.getElementById('mainView');
             mainView.innerHTML = `
@@ -2167,27 +2160,27 @@
                         <div class="profile-avatar">👨‍🎓</div>
                         <h1>${studentInfo.fullName}</h1>
                         <p style="font-size: 1.2rem; margin-top: 0.5rem;">
-                            Sınıf: ${studentInfo.class} | Numara: ${studentInfo.number}
+                            Klasse: ${studentInfo.class} | Nr.: ${studentInfo.number}
                         </p>
                     </div>
                     
                     <div class="profile-stats">
                         <div class="stat-card">
                             <div class="stat-value">${completedUnits}</div>
-                            <div class="stat-label">Tamamlanan Ünite</div>
+                            <div class="stat-label">Themenkreise mit Test</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-value">${avgScore}%</div>
-                            <div class="stat-label">Ortalama Başarı</div>
+                            <div class="stat-label">Durchschnitt</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-value">${totalPoints}</div>
-                            <div class="stat-label">Toplam Puan</div>
+                            <div class="stat-label">Punkte gesamt</div>
                         </div>
                     </div>
                     
                     <div class="unit-detail">
-                        <h2>🏅 Rozetler</h2>
+                        <h2>🏅 Abzeichen</h2>
                         <div class="badge-container">
                             ${badges.map(badge => `
                                 <div class="badge ${badge.unlocked ? '' : 'locked'}" onclick='showBadgeModal(${JSON.stringify(badge)})' style="cursor: pointer;">
@@ -2199,7 +2192,7 @@
                     </div>
                     
                     <div class="unit-detail">
-                        <h2>📚 Ünite Detayları</h2>
+                        <h2>📚 Deine Themenkreise</h2>
                         ${Object.keys(unitsData).map(unitNum => {
                             const unit = unitsData[unitNum];
                             const testScore = testScores[unitNum] || 0;
@@ -2210,32 +2203,32 @@
                                     <h3 style="color: ${unit.color}">
                                         ${completed ? '✅' : '⏳'} Themenkreis ${unitNum}: ${unit.title}
                                     </h3>
-                                    <p>Test Sonucu: <strong>${testScore}%</strong></p>
-                                    <p>Alıştırma Puanı: <strong>${exerciseScore}</strong></p>
+                                    <p>Test: <strong>${testScore}%</strong></p>
+                                    <p>Übungen (Punkte): <strong>${exerciseScore}</strong></p>
                                 </div>
                             `;
                         }).join('')}
                     </div>
                     
                     <div style="text-align: center; margin-top: 2rem;">
-                        ${avgScore >= 60 && completedUnits === 8 ? `
+                        ${avgScore >= 60 && completedUnits === totalUnitCount ? `
                             <button class="btn btn-gold" onclick="showCertificate()" style="font-size: 1.2rem; padding: 1rem 2rem;">
-                                🎓 Sertifika Oluştur
+                                🎓 Zertifikat anzeigen
                             </button>
                         ` : `
                             <div class="dialogue-box">
-                                <strong>ℹ️ Sertifika Koşulları:</strong><br>
-                                - Tüm 8 üniteyi tamamlayın (${completedUnits}/8)<br>
-                                - En az %60 ortalama başarı (${avgScore}%/60%)
+                                <strong>ℹ️ Für das Zertifikat:</strong><br>
+                                – Alle ${totalUnitCount} Themenkreise mit Test (${completedUnits}/${totalUnitCount})<br>
+                                – Mindestens 60 % Durchschnitt (du: ${avgScore}%)
                             </div>
                         `}
                         <br>
                         <button class="btn btn-secondary" onclick="showHome()" style="margin-top: 1rem;">
-                            🏠 Ana Sayfa
+                            🏠 Startseite
                         </button>
                         <br>
                         <button class="delete-account-btn" onclick="deleteMyAccount()">
-                            🗑️ Hesabımı Sil / Delete Account
+                            🗑️ Konto löschen
                         </button>
                     </div>
                 </div>
@@ -2267,7 +2260,7 @@
             const avgScore = completedTests > 0 
                 ? Math.round(Object.values(testScores).reduce((a, b) => a + b, 0) / completedTests)
                 : 0;
-            const date = new Date().toLocaleDateString('tr-TR');
+            const date = new Date().toLocaleDateString('de-DE');
             
             const mainView = document.getElementById('mainView');
             mainView.innerHTML = `
@@ -2277,20 +2270,20 @@
                     <h2>Deutschzertifikat A1</h2>
                     
                     <p style="font-size: 1.3rem; margin: 2rem 0;">
-                        Bu belge şunu onaylar ki
+                        Hiermit wird bestätigt:
                     </p>
                     
                     <div class="student-name">${studentInfo.fullName}</div>
                     
                     <div class="details">
-                        <p><strong>Sınıf:</strong> ${studentInfo.class}</p>
-                        <p><strong>Numara:</strong> ${studentInfo.number}</p>
-                        <p><strong>Tarih:</strong> ${date}</p>
-                        <p><strong>Başarı:</strong> ${avgScore}%</p>
+                        <p><strong>Klasse:</strong> ${studentInfo.class}</p>
+                        <p><strong>Nummer:</strong> ${studentInfo.number}</p>
+                        <p><strong>Datum:</strong> ${date}</p>
+                        <p><strong>Ergebnis:</strong> ${avgScore}%</p>
                     </div>
                     
                     <p style="font-size: 1.2rem; margin: 2rem 0;">
-                        Almanca A1 kursunun 8 ünitesini başarıyla tamamlamıştır.
+                        hat den Deutsch-A1-Kurs mit ${Object.keys(unitsData).length} Themenkreisen erfolgreich abgeschlossen.
                     </p>
                     
                     <div class="signature">
@@ -2299,10 +2292,10 @@
                     
                     <div style="margin-top: 3rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
                         <button class="btn btn-primary" onclick="window.print()">
-                            🖨️ Yazdır / PDF
+                            🖨️ Drucken / PDF
                         </button>
                         <button class="btn btn-secondary" onclick="showHome()">
-                            🏠 Ana Sayfa
+                            🏠 Startseite
                         </button>
                     </div>
                 </div>
@@ -2319,9 +2312,9 @@
             const mainView = document.getElementById('mainView');
             mainView.innerHTML = `
                 <div class="teacher-panel fade-in">
-                    <h2>👨‍🏫 Öğretmen Paneli - Site Tasarımcısı</h2>
+                    <h2>👨‍🏫 Lehrerbereich</h2>
                     <p>
-                        Hoş geldiniz, ${studentInfo.fullName}
+                        Hallo, ${studentInfo.fullName}
                         ${normalizeEmail(currentAuthUser?.email) ? `(<strong>${normalizeEmail(currentAuthUser?.email)}</strong>)` : ''}
                     </p>
                     <div class="dialogue-box" style="margin: 1rem 0; background: rgba(255,255,255,0.15);">
@@ -2331,12 +2324,12 @@
                     </div>
                     
                     <div class="teacher-tabs">
-                        <button class="teacher-tab active" onclick="showTeacherTab('students')">📊 Öğrenciler</button>
-                        <button class="teacher-tab" onclick="showTeacherTab('homeworks')">📨 Ödev Gönder</button>
-                        <button class="teacher-tab" onclick="showTeacherTab('content')">📝 İçerik Düzenle</button>
-                        <button class="teacher-tab" onclick="showTeacherTab('wortschatz')">📚 Wortschatz Editörü</button>
-                        <button class="teacher-tab" onclick="showTeacherTab('certificates')">🎓 Sertifikalar</button>
-                        <button class="teacher-tab" onclick="showTeacherTab('settings')">⚙️ Ayarlar</button>
+                        <button class="teacher-tab active" onclick="showTeacherTab('students')">📊 Schülerinnen und Schüler</button>
+                        <button class="teacher-tab" onclick="showTeacherTab('homeworks')">📨 Hausaufgaben</button>
+                        <button class="teacher-tab" onclick="showTeacherTab('content')">📝 Inhalt bearbeiten</button>
+                        <button class="teacher-tab" onclick="showTeacherTab('wortschatz')">📚 Wortschatz-Editor</button>
+                        <button class="teacher-tab" onclick="showTeacherTab('certificates')">🎓 Zertifikate</button>
+                        <button class="teacher-tab" onclick="showTeacherTab('settings')">⚙️ Einstellungen</button>
                     </div>
                     
                     <div id="teacherContent"></div>
@@ -2353,7 +2346,7 @@
             event.target.classList.add('active');
             
             if (tab === 'students') {
-                content.innerHTML = '<div class="loading">Öğrenciler yükleniyor</div>';
+                content.innerHTML = '<div class="loading">Schülerliste wird geladen …</div>';
                 
                 try {
                     const snapshot = await db.collection('students').get();
@@ -2362,15 +2355,15 @@
                     
                     content.innerHTML = `
                         <div class="unit-detail">
-                            <h3>Öğrenci Listesi (${students.length} öğrenci)</h3>
+                            <h3>Schülerliste (${students.length})</h3>
                             <table class="leaderboard-table">
                                 <thead>
                                     <tr>
-                                        <th>Ad Soyad</th>
-                                        <th>Sınıf</th>
-                                        <th>Puan</th>
-                                        <th>Ünite</th>
-                                        <th>İşlem</th>
+                                        <th>Name</th>
+                                        <th>Klasse</th>
+                                        <th>Punkte</th>
+                                        <th>Themenkreise</th>
+                                        <th>Aktion</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -2379,11 +2372,11 @@
                                             <td>${s.fullName}</td>
                                             <td>${s.class}</td>
                                             <td>${s.totalPoints || 0}</td>
-                                            <td>${(s.completedUnits || []).length}/8</td>
+                                            <td>${(s.completedUnits || []).length}/${Object.keys(unitsData).length}</td>
                                             <td>
-                                                <button class="btn btn-primary" onclick="resetStudentProgress('${s.id}')">İlerlemeyi Sıfırla</button>
+                                                <button class="btn btn-primary" onclick="resetStudentProgress('${s.id}')">Fortschritt zurücksetzen</button>
                                                 <button class="btn btn-primary" onclick="deleteStudentCompletely('${s.id}', '${s.fullName}')" style="background: linear-gradient(135deg, #E74C3C, #C0392B); margin-left: 0.5rem;">
-                                                    Tamamen Sil
+                                                    Vollständig löschen
                                                 </button>
                                             </td>
                                         </tr>
@@ -2393,19 +2386,19 @@
                         </div>
                     `;
                 } catch (error) {
-                    content.innerHTML = `<div class="dialogue-box">❌ Hata: ${error.message}</div>`;
+                    content.innerHTML = `<div class="dialogue-box">❌ Fehler: ${error.message}</div>`;
                 }
             } else if (tab === 'homeworks') {
                 await renderTeacherHomeworkTab(content);
             } else if (tab === 'content') {
                 content.innerHTML = `
                     <div class="unit-detail">
-                        <h3>🎨 Site İçerik Yönetimi</h3>
-                        <p>Tüm ünite içeriklerini buradan düzenleyebilirsiniz.</p>
+                        <h3>🎨 Inhalte verwalten</h3>
+                        <p>Hier kannst du die Inhalte der Themenkreise bearbeiten.</p>
                         <div class="form-group">
-                            <label>Themenkreis Seç:</label>
+                            <label>Themenkreis:</label>
                             <select class="input-field" id="unitSelectTeacher" onchange="loadUnitForEdit(this.value)">
-                                <option value="">Seçiniz...</option>
+                                <option value="">Bitte wählen …</option>
                                 ${Object.keys(unitsData).map(u => `<option value="${u}">Themenkreis ${u} - ${unitsData[u].title}</option>`).join('')}
                             </select>
                         </div>
@@ -2415,12 +2408,12 @@
             } else if (tab === 'wortschatz') {
                 content.innerHTML = `
                     <div class="unit-detail">
-                        <h3>📚 Wortschatz Editörü (Sınırsız Kart)</h3>
-                        <p>Her ünite için kelime kartlarını düzenleyin, ekleyin veya silin.</p>
+                        <h3>📚 Wortschatz-Editor</h3>
+                        <p>Karten pro Themenkreis bearbeiten, hinzufügen oder löschen.</p>
                         <div class="form-group">
-                            <label>Themenkreis Seç:</label>
+                            <label>Themenkreis:</label>
                             <select class="input-field" id="vocabUnitSelect" onchange="loadWortschatzEditor(this.value)">
-                                <option value="">Seçiniz...</option>
+                                <option value="">Bitte wählen …</option>
                                 ${Object.keys(unitsData).map(u => `<option value="${u}">Themenkreis ${u} - ${unitsData[u].title}</option>`).join('')}
                             </select>
                         </div>
@@ -2428,7 +2421,7 @@
                     </div>
                 `;
             } else if (tab === 'certificates') {
-                content.innerHTML = '<div class="loading">Sertifikalar yükleniyor</div>';
+                content.innerHTML = '<div class="loading">Zertifikate werden geladen …</div>';
                 
                 try {
                     const snapshot = await db.collection('students')
@@ -2440,22 +2433,22 @@
                         const avgScore = (data.completedUnits || []).length > 0 
                             ? Object.values(data.testScores || {}).reduce((a, b) => a + b, 0) / (data.completedUnits || []).length
                             : 0;
-                        if ((data.completedUnits || []).length === 8 && avgScore >= 60) {
+                        if ((data.completedUnits || []).length === Object.keys(unitsData).length && avgScore >= 60) {
                             eligibleStudents.push({ id: doc.id, ...data, avgScore: Math.round(avgScore) });
                         }
                     });
                     
                     content.innerHTML = `
                         <div class="unit-detail">
-                            <h3>Sertifika Yönetimi (${eligibleStudents.length} sertifika)</h3>
+                            <h3>Zertifikate (${eligibleStudents.length})</h3>
                             ${eligibleStudents.length > 0 ? `
                                 <table class="leaderboard-table">
                                     <thead>
                                         <tr>
-                                            <th>Ad Soyad</th>
-                                            <th>Sınıf</th>
-                                            <th>Başarı %</th>
-                                            <th>Tarih</th>
+                                            <th>Name</th>
+                                            <th>Klasse</th>
+                                            <th>Ergebnis %</th>
+                                            <th>Datum</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -2464,39 +2457,39 @@
                                                 <td>${s.fullName}</td>
                                                 <td>${s.class}</td>
                                                 <td>${s.avgScore}%</td>
-                                                <td>${new Date(s.createdAt).toLocaleDateString('tr-TR')}</td>
+                                                <td>${new Date(s.createdAt).toLocaleDateString('de-DE')}</td>
                                             </tr>
                                         `).join('')}
                                     </tbody>
                                 </table>
-                            ` : '<p>Henüz sertifika almaya uygun öğrenci yok.</p>'}
+                            ` : '<p>Noch keine Schülerin / kein Schüler mit Zertifikat.</p>'}
                         </div>
                     `;
                 } catch (error) {
-                    content.innerHTML = `<div class="dialogue-box">❌ Hata: ${error.message}</div>`;
+                    content.innerHTML = `<div class="dialogue-box">❌ Fehler: ${error.message}</div>`;
                 }
             } else if (tab === 'settings') {
                 content.innerHTML = `
                     <div class="unit-detail">
-                        <h3>⚙️ Site Ayarları</h3>
+                        <h3>⚙️ Einstellungen</h3>
                         <div class="form-group">
                             <label>Dark Mode:</label>
-                            <button class="btn btn-dark" onclick="toggleDarkMode()">Değiştir</button>
+                            <button class="btn btn-dark" onclick="toggleDarkMode()">Wechseln</button>
                         </div>
                         <div class="form-group">
-                            <label>Test Soru Sayısı:</label>
+                            <label>Anzahl Testfragen:</label>
                             <input type="number" class="input-field" value="10" disabled>
                         </div>
                         <div class="unit-detail admin-manage-card" style="margin-top: 1.5rem;">
-                            <h3>🔐 Admin Yönetimi (E-posta)</h3>
+                            <h3>🔐 Admins (E-Mail)</h3>
                             <p style="color: var(--text-secondary); margin-bottom: 1rem;">
-                                Bu listeye eklenen e-postalar öğretmen paneline tam yetkiyle erişebilir.
+                                Diese E-Mails haben vollen Zugriff auf den Lehrerbereich.
                             </p>
 
                             <div class="admin-manage-row">
-                                <input id="adminEmailInput" type="email" class="input-field" placeholder="admin@okul.com">
-                                <button class="btn btn-primary" onclick="addAdminEmailFromInput()">➕ Ekle</button>
-                                <button class="btn btn-secondary" onclick="saveAdminEmailsToFirestore()">💾 Kaydet</button>
+                                <input id="adminEmailInput" type="email" class="input-field" placeholder="admin@schule.de">
+                                <button class="btn btn-primary" onclick="addAdminEmailFromInput()">➕ Hinzufügen</button>
+                                <button class="btn btn-secondary" onclick="saveAdminEmailsToFirestore()">💾 Speichern</button>
                             </div>
 
                             <div id="adminEmailsList" class="admin-emails-list"></div>
@@ -2509,7 +2502,7 @@
         }
 
         async function renderTeacherHomeworkTab(content) {
-            content.innerHTML = '<div class="loading">Ödev formu yükleniyor</div>';
+            content.innerHTML = '<div class="loading">Formular wird geladen …</div>';
             try {
                 const snapshot = await db.collection('students').get();
                 const students = [];
@@ -2517,92 +2510,92 @@
                     const data = doc.data() || {};
                     if (data.uid) students.push({ id: doc.id, ...data });
                 });
-                students.sort((a, b) => String(a.fullName || '').localeCompare(String(b.fullName || ''), 'tr'));
+                students.sort((a, b) => String(a.fullName || '').localeCompare(String(b.fullName || ''), 'de'));
 
                 content.innerHTML = `
                     <div class="unit-detail">
-                        <h3>📨 Ödev Gönder</h3>
-                        <p>Sınıfa veya seçili öğrenciye ödev atayabilirsiniz.</p>
+                        <h3>📨 Hausaufgaben senden</h3>
+                        <p>Für eine ganze Klasse oder für eine Schülerin / einen Schüler.</p>
 
                         <div class="dialogue-box" style="margin-bottom: 1rem;">
-                            <strong>1) Sınıfa Ödev Gönder</strong>
+                            <strong>1) An die Klasse</strong>
                             <form onsubmit="sendHomeworkFromTeacherTab(event, 'class')">
                                 <div class="form-group">
-                                    <label>Sınıf</label>
+                                    <label>Klasse</label>
                                     <select id="homeworkClassTarget" class="input-field" required>
-                                        <option value="">Sınıf seçiniz...</option>
+                                        <option value="">Klasse wählen …</option>
                                         ${ALLOWED_CLASSES.map((className) => `<option value="${className}">${className}</option>`).join('')}
                                     </select>
                                 </div>
                                 <div class="form-group">
-                                    <label>Ünite</label>
+                                    <label>Themenkreis</label>
                                     <select id="homeworkClassUnitId" class="input-field" required>
-                                        <option value="">Ünite seçiniz...</option>
+                                        <option value="">Themenkreis wählen …</option>
                                         ${Object.keys(unitsData).map((u) => `<option value="${u}">Themenkreis ${u} - ${escapeHtml(unitsData[u].title || '')}</option>`).join('')}
                                     </select>
                                 </div>
                                 <div class="form-group">
-                                    <label>Başlık</label>
+                                    <label>Titel</label>
                                     <input type="text" id="homeworkClassTitle" class="input-field" required>
                                 </div>
                                 <div class="form-group">
-                                    <label>İçerik</label>
+                                    <label>Text</label>
                                     <textarea id="homeworkClassContent" class="input-field" rows="4" required></textarea>
                                 </div>
                                 <div class="form-group">
-                                    <label>Deadline</label>
+                                    <label>Abgabe bis</label>
                                     <input type="datetime-local" id="homeworkClassDeadline" class="input-field" required>
                                 </div>
-                                <button class="btn btn-primary" type="submit">Gönder</button>
+                                <button class="btn btn-primary" type="submit">Senden</button>
                             </form>
                         </div>
 
                         <div class="dialogue-box">
-                            <strong>2) Öğrenciye Özel Ödev</strong>
+                            <strong>2) Für eine Person</strong>
                             <form onsubmit="sendHomeworkFromTeacherTab(event, 'student')">
                                 <div class="form-group">
-                                    <label>Öğrenci</label>
+                                    <label>Schülerin / Schüler</label>
                                     <select id="homeworkStudentTarget" class="input-field" required>
-                                        <option value="">Öğrenci seçiniz...</option>
+                                        <option value="">Person wählen …</option>
                                         ${students.map((s) => `
                                             <option value="${s.uid}">
-                                                ${escapeHtml(s.fullName || 'İsimsiz')} - ${escapeHtml(normalizeClassName(s.class) || '-')}
+                                                ${escapeHtml(s.fullName || 'Ohne Name')} - ${escapeHtml(normalizeClassName(s.class) || '-')}
                                             </option>
                                         `).join('')}
                                     </select>
                                 </div>
                                 <div class="form-group">
-                                    <label>Ünite</label>
+                                    <label>Themenkreis</label>
                                     <select id="homeworkStudentUnitId" class="input-field" required>
-                                        <option value="">Ünite seçiniz...</option>
+                                        <option value="">Themenkreis wählen …</option>
                                         ${Object.keys(unitsData).map((u) => `<option value="${u}">Themenkreis ${u} - ${escapeHtml(unitsData[u].title || '')}</option>`).join('')}
                                     </select>
                                 </div>
                                 <div class="form-group">
-                                    <label>Başlık</label>
+                                    <label>Titel</label>
                                     <input type="text" id="homeworkStudentTitle" class="input-field" required>
                                 </div>
                                 <div class="form-group">
-                                    <label>İçerik</label>
+                                    <label>Text</label>
                                     <textarea id="homeworkStudentContent" class="input-field" rows="4" required></textarea>
                                 </div>
                                 <div class="form-group">
-                                    <label>Deadline</label>
+                                    <label>Abgabe bis</label>
                                     <input type="datetime-local" id="homeworkStudentDeadline" class="input-field" required>
                                 </div>
-                                <button class="btn btn-primary" type="submit">Gönder</button>
+                                <button class="btn btn-primary" type="submit">Senden</button>
                             </form>
                         </div>
 
                         <div class="unit-detail" style="margin-top: 1rem;">
-                            <h3>📊 Ödev Progress Analizi</h3>
-                            <div id="teacherHomeworkAnalytics">Yükleniyor...</div>
+                            <h3>📊 Hausaufgaben – Überblick</h3>
+                            <div id="teacherHomeworkAnalytics">Wird geladen …</div>
                         </div>
                     </div>
                 `;
                 await renderTeacherHomeworkAnalytics(students);
             } catch (error) {
-                content.innerHTML = `<div class="dialogue-box">❌ Ödev formu yüklenemedi: ${escapeHtml(error.message || 'Bilinmeyen hata')}</div>`;
+                content.innerHTML = `<div class="dialogue-box">❌ Formular: ${escapeHtml(error.message || 'Unbekannter Fehler')}</div>`;
             }
         }
 
@@ -2610,7 +2603,7 @@
             const root = document.getElementById('teacherHomeworkAnalytics');
             if (!root) return;
             if (!db) {
-                root.innerHTML = '<div class="dialogue-box">Firebase bağlantısı yok.</div>';
+                root.innerHTML = '<div class="dialogue-box">Keine Firebase-Verbindung.</div>';
                 return;
             }
             try {
@@ -2618,7 +2611,7 @@
                 const homeworks = hwSnap.docs.map((d) => ({ id: d.id, ...d.data() }))
                     .filter((h) => getUnitIdValue(h.unitId));
                 if (homeworks.length === 0) {
-                    root.innerHTML = '<div class="dialogue-box">Henüz ünite bazlı ödev bulunmuyor.</div>';
+                    root.innerHTML = '<div class="dialogue-box">Noch keine Hausaufgaben mit Themenkreis.</div>';
                     return;
                 }
                 const studentByUid = {};
@@ -2641,10 +2634,10 @@
                     const deadlineDate = parseDeadlineDate(hw.deadlineAt);
                     blocks.push(`
                         <div class="dialogue-box" style="margin-bottom: .9rem;">
-                            <strong>${escapeHtml(hw.title || 'Başlıksız Ödev')}</strong><br>
-                            <small>Ünite: ${escapeHtml(String(hw.unitId || '-'))} | Deadline: ${deadlineDate ? deadlineDate.toLocaleString('tr-TR') : 'Belirtilmedi'}</small>
-                            <div style="margin-top:.45rem;">Sınıf ortalaması (şu an): <strong>%${avgNow}</strong> | Deadline'a kadar: <strong>%${avgDeadline}</strong></div>
-                            <div style="margin-top:.35rem;">En yüksek ilerleme: ${topRows.map((r) => {
+                            <strong>${escapeHtml(hw.title || 'Hausaufgabe')}</strong><br>
+                            <small>Themenkreis: ${escapeHtml(String(hw.unitId || '-'))} | Frist: ${deadlineDate ? deadlineDate.toLocaleString('de-DE') : 'Keine Frist'}</small>
+                            <div style="margin-top:.45rem;">Klassen-Durchschnitt (jetzt): <strong>%${avgNow}</strong> | Bis zur Frist: <strong>%${avgDeadline}</strong></div>
+                            <div style="margin-top:.35rem;">Top Fortschritt: ${topRows.map((r) => {
                                 const name = escapeHtml(studentByUid[r.uid]?.fullName || r.uid);
                                 return `${name} (%${r.progressNow})`;
                             }).join(', ') || '-'}</div>
@@ -2654,7 +2647,7 @@
                                     const fixedValue = r.isLate ? r.progressBeforeDeadline : r.progressNow;
                                     return `
                                         <div style="margin-bottom:.45rem;">
-                                            <div style="font-size:.9rem;">${studentName} - %${fixedValue}${r.isLate ? ' (deadline sabit)' : ''}</div>
+                                            <div style="font-size:.9rem;">${studentName} - %${fixedValue}${r.isLate ? ' (Stand bei Frist)' : ''}</div>
                                             <div class="progress-bar" style="height: 8px;">
                                                 <div class="progress-fill" style="width:${fixedValue}%;">${fixedValue}%</div>
                                             </div>
@@ -2665,20 +2658,20 @@
                         </div>
                     `);
                 }
-                root.innerHTML = blocks.join('') || '<div class="dialogue-box">Analiz için yeterli veri yok.</div>';
+                root.innerHTML = blocks.join('') || '<div class="dialogue-box">Zu wenig Daten für die Auswertung.</div>';
             } catch (error) {
-                root.innerHTML = `<div class="dialogue-box">❌ Analiz yüklenemedi: ${escapeHtml(error.message || 'Bilinmeyen hata')}</div>`;
+                root.innerHTML = `<div class="dialogue-box">❌ Auswertung: ${escapeHtml(error.message || 'Unbekannter Fehler')}</div>`;
             }
         }
 
         async function sendHomeworkFromTeacherTab(event, targetType) {
             event.preventDefault();
             if (!isTeacher) {
-                alert('Sadece öğretmenler ödev oluşturabilir.');
+                alert('Nur Lehrkräfte können Hausaufgaben erstellen.');
                 return;
             }
             if (!db || !currentAuthUser?.uid) {
-                alert('Veritabanı bağlantısı hazır değil.');
+                alert('Die Datenbank ist nicht bereit.');
                 return;
             }
 
@@ -2697,13 +2690,13 @@
             const deadlineDate = deadlineValue ? new Date(deadlineValue) : null;
 
             if (!title || !contentValue || !rawTarget || !unitId || !deadlineDate || Number.isNaN(deadlineDate.getTime())) {
-                alert('Lütfen tüm alanları doldurun.');
+                alert('Bitte alle Felder ausfüllen.');
                 return;
             }
 
             const target = isClassTarget ? normalizeClassName(rawTarget) : String(rawTarget).trim();
             if (isClassTarget && !target) {
-                alert('Geçerli bir sınıf seçiniz.');
+                alert('Bitte eine gültige Klasse wählen.');
                 return;
             }
 
@@ -2739,10 +2732,10 @@
                 if (!isClassTarget) {
                     document.getElementById(targetInputId).selectedIndex = 0;
                 }
-                alert('✅ Ödev gönderildi.');
+                alert('✅ Hausaufgabe gesendet.');
             } catch (error) {
-                console.error('Ödev gönderme hatası:', error);
-                alert(`❌ Ödev gönderilemedi: ${error.message}`);
+                console.error('Hausaufgabe senden fehlgeschlagen:', error);
+                alert(`❌ Hausaufgabe konnte nicht gesendet werden: ${error.message}`);
             }
         }
 
@@ -2772,7 +2765,7 @@
             adminEmails = unique;
 
             if (unique.length === 0) {
-                listEl.innerHTML = `<div class="dialogue-box">Henüz admin e-posta yok.</div>`;
+                listEl.innerHTML = `<div class="dialogue-box">Noch keine Admin-E-Mail.</div>`;
                 return;
             }
 
@@ -2788,8 +2781,8 @@
                                 </div>
                                 <button class="btn btn-secondary admin-email-remove"
                                     onclick="removeAdminEmail('${email}')"
-                                    ${isMe ? 'disabled title="Kendini listeden çıkaramazsın"' : ''}>
-                                    🗑️ Sil
+                                    ${isMe ? 'disabled title="Du kannst dich nicht selbst entfernen"' : ''}>
+                                    🗑️ Entfernen
                                 </button>
                             </div>
                         `;
@@ -2803,12 +2796,12 @@
             if (!input) return;
             const value = normalizeEmail(input.value);
             if (!value || !value.includes('@')) {
-                setAdminManageMessage('Geçerli bir e-posta girin.', 'error');
+                setAdminManageMessage('Bitte eine gültige E-Mail eingeben.', 'error');
                 return;
             }
             adminEmails = Array.from(new Set([...(adminEmails || []).map(normalizeEmail), value]));
             input.value = '';
-            setAdminManageMessage('E-posta listeye eklendi. Kaydetmeyi unutmayın.', 'success');
+            setAdminManageMessage('E-Mail zur Liste hinzugefügt. Bitte speichern.', 'success');
             renderAdminEmailsList();
         }
 
@@ -2816,27 +2809,27 @@
             const target = normalizeEmail(email);
             const myEmail = normalizeEmail(currentAuthUser?.email || '');
             if (target && myEmail && target === myEmail) {
-                setAdminManageMessage('Kendini listeden çıkaramazsın.', 'error');
+                setAdminManageMessage('Du kannst dich nicht selbst entfernen.', 'error');
                 return;
             }
             adminEmails = (adminEmails || []).map(normalizeEmail).filter((e) => e && e !== target);
-            setAdminManageMessage('E-posta listeden çıkarıldı. Kaydetmeyi unutmayın.', 'success');
+            setAdminManageMessage('E-Mail aus der Liste entfernt. Bitte speichern.', 'success');
             renderAdminEmailsList();
         }
 
         async function saveAdminEmailsToFirestore() {
             if (!isTeacher) {
-                setAdminManageMessage('Bu işlem sadece adminler içindir.', 'error');
+                setAdminManageMessage('Nur für Admins.', 'error');
                 return;
             }
             if (!db) {
-                setAdminManageMessage('Firebase bağlantısı yok!', 'error');
+                setAdminManageMessage('Keine Firebase-Verbindung.', 'error');
                 return;
             }
             try {
                 const unique = Array.from(new Set((adminEmails || []).map(normalizeEmail).filter(Boolean)));
                 if (unique.length === 0) {
-                    setAdminManageMessage('En az 1 admin e-posta olmalı.', 'error');
+                    setAdminManageMessage('Mindestens eine Admin-E-Mail nötig.', 'error');
                     return;
                 }
                 await db.collection(ADMIN_CONFIG_PATH.collection).doc(ADMIN_CONFIG_PATH.doc).set({
@@ -2845,22 +2838,22 @@
                     updatedBy: normalizeEmail(currentAuthUser?.email || studentInfo?.email || '')
                 }, { merge: true });
                 adminEmails = unique;
-                setAdminManageMessage('Admin listesi kaydedildi.', 'success');
+                setAdminManageMessage('Admin-Liste gespeichert.', 'success');
                 await refreshAdminState();
                 renderAdminEmailsList();
             } catch (e) {
                 console.error('Admin listesi kaydedilemedi:', e);
-                setAdminManageMessage(`Kaydetme hatası: ${e.message}`, 'error');
+                setAdminManageMessage(`Speichern fehlgeschlagen: ${e.message}`, 'error');
             }
         }
 
         async function resetStudentProgress(studentId) {
             if (!isTeacher) {
-                alert('❌ Bu özellik sadece öğretmenler içindir!');
+                alert('❌ Nur für Lehrkräfte.');
                 return;
             }
             
-            if (!confirm('Bu öğrencinin tüm ilerlemesini sıfırlamak istediğinizden emin misiniz?')) return;
+            if (!confirm('Fortschritt dieser Person wirklich zurücksetzen?')) return;
             
             try {
                 await db.collection('students').doc(studentId).update({
@@ -2871,7 +2864,7 @@
                     exerciseScores: {},
                     lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                alert('✅ Öğrenci ilerlemesi sıfırlandı!');
+                alert('✅ Fortschritt wurde zurückgesetzt.');
                 
                 // Refresh the list
                 showTeacherPanel();
@@ -2880,24 +2873,24 @@
                     if (studentsTab) studentsTab.click();
                 }, 300);
             } catch (error) {
-                console.error('❌ Sıfırlama hatası:', error);
-                alert('❌ Hata: ' + error.message + '\n\nFirestore kurallarınızı kontrol edin.');
+                console.error('❌ Zurücksetzen fehlgeschlagen:', error);
+                alert('❌ Fehler: ' + error.message + '\n\nBitte die Firestore-Regeln prüfen.');
             }
         }
 
         // Update breadcrumb
         function updateBreadcrumb() {
             const breadcrumb = document.getElementById('breadcrumb');
-            let html = '<a onclick="showHome()">🏠 Ana Sayfa</a>';
+            let html = '<a onclick="showHome()">🏠 Startseite</a>';
             
             if (currentView === 'certificate') {
-                html += ' &gt; <span>🎓 Sertifika</span>';
+                html += ' &gt; <span>🎓 Zertifikat</span>';
             } else if (currentView === 'leaderboard') {
                 html += ' &gt; <span>🏆 Leaderboard</span>';
             } else if (currentView === 'profile') {
                 html += ' &gt; <span>👤 Profil</span>';
             } else if (currentView === 'teacher') {
-                html += ' &gt; <span>👨‍🏫 Öğretmen Paneli</span>';
+                html += ' &gt; <span>👨‍🏫 Lehrerbereich</span>';
             } else if (currentUnit) {
                 const unit = unitsData[currentUnit];
                 html += ` &gt; <a onclick="showUnit(${currentUnit})">Themenkreis ${currentUnit}</a>`;
@@ -2961,7 +2954,7 @@
 
         // Reset progress
         function resetProgress() {
-            if (confirm('Tüm ilerlemeyi silmek istediğinizden emin misiniz?')) {
+            if (confirm('Gesamten Fortschritt wirklich löschen?')) {
                 localStorage.removeItem('exerciseScores');
                 localStorage.removeItem('testScores');
                 exerciseScores = {};
@@ -2971,18 +2964,18 @@
                 if (studentDocId && db) {
                     updateStudentInFirestore();
                 }
-                alert('✅ İlerleme sıfırlandı!');
+                alert('✅ Fortschritt wurde gelöscht.');
                 showHome();
             }
         }
 
         // Delete student account completely
         async function deleteMyAccount() {
-            if (!confirm('⚠️ UYARI: Hesabınız ve tüm verileriniz kalıcı olarak silinecek!\n\nDevam etmek istediğinizden emin misiniz?')) {
+            if (!confirm('⚠️ Achtung: Dein Konto und alle Daten werden dauerhaft gelöscht.\n\nWirklich fortfahren?')) {
                 return;
             }
             
-            if (!confirm('Bu işlem geri alınamaz! Son kez soruyoruz, hesabınızı silmek istediğinizden EMİN MİSİNİZ?')) {
+            if (!confirm('Das kann nicht rückgängig gemacht werden. Konto WIRKLICH endgültig löschen?')) {
                 return;
             }
             
@@ -2990,7 +2983,7 @@
                 // Delete from Firestore
                 if (studentDocId && db) {
                     await db.collection('students').doc(studentDocId).delete();
-                    console.log('✅ Firestore kaydı silindi');
+                    console.log('✅ Firestore-Eintrag gelöscht');
                 }
 
                 // Try deleting auth user too
@@ -2998,7 +2991,7 @@
                     try {
                         await auth.currentUser.delete();
                     } catch (authErr) {
-                        console.warn('⚠️ Auth user silinemedi (yeniden giriş gerekebilir):', authErr);
+                        console.warn('⚠️ Auth-Benutzer konnte nicht gelöscht werden (erneute Anmeldung nötig):', authErr);
                     }
                 }
                 
@@ -3011,7 +3004,7 @@
                 exerciseScores = {};
                 testScores = {};
                 
-                alert('✅ Hesabınız başarıyla silindi!');
+                alert('✅ Konto wurde gelöscht.');
                 
                 if (auth) {
                     await auth.signOut();
@@ -3019,23 +3012,23 @@
                     window.location.reload();
                 }
             } catch (error) {
-                console.error('❌ Hesap silme hatası:', error);
-                alert('❌ Hata: ' + error.message);
+                console.error('❌ Konto löschen fehlgeschlagen:', error);
+                alert('❌ Fehler: ' + error.message);
             }
         }
 
         // Delete student from teacher panel (complete deletion)
         async function deleteStudentCompletely(studentId, studentName) {
-            if (!confirm(`⚠️ ${studentName} isimli öğrenciyi Leaderboard'dan tamamen kaldırmak istediğinizden emin misiniz?\n\nBu işlem geri alınamaz!`)) {
+            if (!confirm(`⚠️ ${studentName} wirklich vollständig aus der Rangliste entfernen?\n\nDas kann nicht rückgängig gemacht werden.`)) {
                 return;
             }
             
             try {
                 await db.collection('students').doc(studentId).delete();
-                alert('✅ Öğrenci tamamen silindi!');
+                alert('✅ Eintrag wurde gelöscht.');
                 showTeacherTab('students');
             } catch (error) {
-                alert('❌ Hata: ' + error.message);
+                alert('❌ Fehler: ' + error.message);
             }
         }
 
@@ -3051,10 +3044,10 @@
                         ${badge.description}
                     </p>
                     <p style="margin-top: 1rem; font-weight: 600; color: ${badge.unlocked ? 'var(--success)' : 'var(--error)'};">
-                        ${badge.unlocked ? '✅ KAZANILDI' : '🔒 KİLİTLİ'}
+                        ${badge.unlocked ? '✅ Freigeschaltet' : '🔒 Gesperrt'}
                     </p>
                     <button class="btn btn-secondary" onclick="this.closest('div').parentElement.remove()" style="width: 100%; margin-top: 1rem;">
-                        Kapat
+                        Schließen
                     </button>
                 </div>
             `;
@@ -3062,79 +3055,80 @@
         }
 
         // Calculate badges - ENHANCED with 12 badges
-        function calculateBadges(completedUnits, avgScore, totalPoints) {
+        function calculateBadges(completedUnits, avgScore, totalPoints, totalUnitCount) {
+            const n = totalUnitCount || Object.keys(unitsData).length;
             return [
                 { 
                     icon: '🌟', 
-                    title: 'İlk Adım', 
+                    title: 'Erster Schritt', 
                     unlocked: completedUnits >= 1,
-                    description: 'İlk ünitenizi tamamladınız! Almanca öğrenme yolculuğunuza başladınız.'
+                    description: 'Du hast den ersten Themenkreis geschafft. Gut gemacht!'
                 },
                 { 
                     icon: '🔥', 
-                    title: 'Azimli', 
+                    title: 'Dranbleiben', 
                     unlocked: completedUnits >= 4,
-                    description: '4 üniteyi tamamladınız! Kararlılığınız takdire şayan.'
+                    description: 'Vier Themenkreise sind fertig. Du bleibst dran.'
                 },
                 { 
                     icon: '🏆', 
-                    title: 'Şampiyon', 
-                    unlocked: completedUnits === 8,
-                    description: 'Tüm üniteleri tamamladınız! Gerçek bir şampiyonsunuz!'
+                    title: 'Champion', 
+                    unlocked: completedUnits === n,
+                    description: 'Alle Themenkreise sind fertig. Stark!'
                 },
                 { 
                     icon: '💯', 
-                    title: 'Mükemmeliyetçi', 
+                    title: '100 %', 
                     unlocked: avgScore === 100,
-                    description: '%100 başarı! Kusursuz performans gösterdiniz.'
+                    description: '100 % im Durchschnitt. Perfekt!'
                 },
                 { 
                     icon: '⭐', 
-                    title: 'Yıldız', 
+                    title: 'Stern', 
                     unlocked: avgScore >= 80,
-                    description: '%80 ve üzeri başarı! Parlak bir öğrencisiniz.'
+                    description: '80 % oder mehr – sehr gut!'
                 },
                 { 
                     icon: '📚', 
-                    title: 'Bilge', 
+                    title: 'Wortschatz-Fan', 
                     unlocked: totalPoints >= 100,
-                    description: '100+ puan! Bilgi dağarcığınız çok geniş.'
+                    description: 'Über 100 Punkte bei den Übungen.'
                 },
                 { 
                     icon: '🎯', 
-                    title: 'Hedef Odaklı', 
+                    title: 'Ziel klar', 
                     unlocked: completedUnits >= 6,
-                    description: '6 ünite tamamlandı! Hedefinize yaklaştınız.'
+                    description: 'Sechs Themenkreise sind fertig.'
                 },
                 { 
                     icon: '💪', 
-                    title: 'Güçlü', 
+                    title: 'Training', 
                     unlocked: totalPoints >= 50,
-                    description: '50+ puan! İradeniz çok güçlü.'
+                    description: 'Über 50 Punkte bei den Übungen.'
                 },
                 { 
                     icon: '🚀', 
-                    title: 'Hızlı Öğrenen', 
+                    title: 'Schnell', 
                     unlocked: completedUnits >= 3 && avgScore >= 75,
-                    description: '3 ünite ve %75+ başarı! Hızlı öğreniyorsunuz.'
+                    description: 'Drei Themenkreise und 75 % oder mehr.'
                 },
                 { 
                     icon: '🎓', 
-                    title: 'Akademisyen', 
+                    title: 'Sehr gut', 
                     unlocked: avgScore >= 90 && completedUnits >= 5,
-                    description: '%90+ başarı ve 5+ ünite! Akademik başarı.'
+                    description: '90 % oder mehr und fünf Themenkreise.'
                 },
                 { 
                     icon: '🤖', 
-                    title: 'Çok Yönlü', 
+                    title: 'Vielseitig', 
                     unlocked: totalPoints >= 150,
-                    description: '150+ puan! Her konuda yeteneklisiniz.'
+                    description: 'Über 150 Punkte bei den Übungen.'
                 },
                 { 
                     icon: '👑', 
-                    title: 'BABAPİRO', 
-                    unlocked: completedUnits === 8 && avgScore >= 95,
-                    description: 'Tüm üniteler %95+ ile! Kraliyet performansı!'
+                    title: 'Top', 
+                    unlocked: completedUnits === n && avgScore >= 95,
+                    description: 'Alle Themenkreise mit 95 % oder mehr.'
                 }
             ];
         }
@@ -3148,69 +3142,69 @@
             
             editArea.innerHTML = `
                 <div class="unit-detail" style="margin-top: 2rem;">
-                    <h3>🎨 Themenkreis ${unitNum}: ${unit.title} - Tam Düzenleme</h3>
+                    <h3>🎨 Themenkreis ${unitNum}: ${unit.title} – Bearbeiten</h3>
                     
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
                         <div class="form-group">
-                            <label>📝 Almanca Başlık:</label>
+                            <label>📝 Titel (Deutsch):</label>
                             <input type="text" class="input-field" id="edit_title" value="${unit.title}">
                         </div>
                         
                         <div class="form-group">
-                            <label>🇹🇷 Türkçe Alt Başlık:</label>
+                            <label>📌 Untertitel:</label>
                             <input type="text" class="input-field" id="edit_subtitle" value="${unit.subtitle}">
                         </div>
                     </div>
                     
                     <div class="form-group">
-                        <label>🎨 Tema Rengi:</label>
+                        <label>🎨 Themefarbe:</label>
                         <input type="color" class="input-field" id="edit_color" value="${unit.color}" style="height: 50px; width: 100px;">
                     </div>
                     
                     <hr style="margin: 2rem 0; border-color: rgba(255,255,255,0.2);">
                     
-                    <h4>🗣️ Kommunikation - Öğrenme Hedefleri</h4>
+                    <h4>🗣️ Kommunikation – Lernziele / Öğrenme Hedefleri</h4>
                     <div class="form-group">
                         <textarea class="input-field" id="edit_skills" rows="5">${unit.kommunikation.skills.join('\n')}</textarea>
-                        <small>Her satıra bir beceri yazın</small>
+                        <small>Eine Zeile pro Lernziel</small>
                     </div>
                     
-                    <h4>💬 Örnek Cümleler</h4>
+                    <h4>💬 Beispiele</h4>
                     <div class="form-group">
                         <textarea class="input-field" id="edit_examples" rows="5">${unit.kommunikation.examples.join('\n')}</textarea>
-                        <small>Her satıra bir örnek cümle yazın</small>
+                        <small>Eine Zeile pro Beispiel</small>
                     </div>
                     
-                    <h4>🎭 Diyaloglar</h4>
+                    <h4>🎭 Dialoge</h4>
                     <div id="dialogueEditList">
                         ${unit.kommunikation.dialogues.map((d, idx) => `
                             <div class="dialogue-box" style="margin: 0.5rem 0; display: grid; grid-template-columns: 150px 1fr auto; gap: 0.5rem; align-items: center;">
-                                <input type="text" class="input-field" value="${d.speaker}" id="dialogue_speaker_${idx}" placeholder="Konuşan">
-                                <input type="text" class="input-field" value="${d.text}" id="dialogue_text_${idx}" placeholder="Metin">
+                                <input type="text" class="input-field" value="${d.speaker}" id="dialogue_speaker_${idx}" placeholder="Sprecher/in">
+                                <input type="text" class="input-field" value="${d.text}" id="dialogue_text_${idx}" placeholder="Text">
                                 <button class="btn btn-secondary" onclick="removeDialogue(${idx})" style="padding: 0.5rem;">❌</button>
                             </div>
                         `).join('')}
                     </div>
                     <button class="btn btn-secondary" onclick="addNewDialogue()" style="margin-top: 0.5rem;">
-                        ➕ Yeni Diyalog Ekle
+                        ➕ Dialog hinzufügen
                     </button>
                     
                     <hr style="margin: 2rem 0; border-color: rgba(255,255,255,0.2);">
                     
-                    <h4>📖 Grammatik Konuları</h4>
+                    <h4>📖 Grammatik – Themen</h4>
                     <div id="grammarEditList">
                         ${unit.grammatik.map((g, idx) => `
                             <div class="dialogue-box" style="margin: 1rem 0; padding: 1rem;">
                                 <div class="form-group">
-                                    <label>Konu ${idx + 1}:</label>
+                                    <label>Thema ${idx + 1}:</label>
                                     <input type="text" class="input-field" value="${g.topic}" id="grammar_topic_${idx}">
                                 </div>
                                 <div class="form-group">
-                                    <label>Açıklama:</label>
+                                    <label>Erklärung:</label>
                                     <textarea class="input-field" id="grammar_explanation_${idx}" rows="2">${g.explanation}</textarea>
                                 </div>
                                 <div class="form-group">
-                                    <label>Örnek:</label>
+                                    <label>Beispiel:</label>
                                     <input type="text" class="input-field" value="${g.example}" id="grammar_example_${idx}">
                                 </div>
                             </div>
@@ -3221,15 +3215,15 @@
                     
                     <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
                         <button class="btn btn-primary" onclick="saveUnitChangesToFirestore(${unitNum})" style="font-size: 1.2rem; flex: 1;">
-                            💾 Firestore'a Kaydet ve Yayınla
+                            💾 In Firestore speichern und veröffentlichen
                         </button>
                         <button class="btn btn-secondary" onclick="loadUnitForEdit(${unitNum})" style="flex: 0 0 auto;">
-                            🔄 Sıfırla
+                            🔄 Zurücksetzen
                         </button>
                     </div>
                     
                     <p style="margin-top: 1rem; font-size: 0.9rem; color: white; text-align: center;">
-                        ℹ️ Değişiklikler Firestore'a kaydedilir ve TÜM kullanıcılara ANINDA yansır.
+                        ℹ️ Änderungen werden in Firestore gespeichert und für alle sofort sichtbar.
                     </p>
                 </div>
             `;
@@ -3244,15 +3238,15 @@
             
             editArea.innerHTML = `
                 <div class="unit-detail" style="margin-top: 2rem;">
-                    <h3>📚 Themenkreis ${unitNum} - Wortschatz Editörü</h3>
-                    <p>Toplam <strong>${unit.wortschatz.length}</strong> kelime kartı</p>
+                    <h3>📚 Themenkreis ${unitNum} – Wortschatz-Editor</h3>
+                    <p>Insgesamt <strong>${unit.wortschatz.length}</strong> Karten</p>
                     
                     <div id="vocabCardsList" style="max-height: 500px; overflow-y: auto; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 10px;">
                         ${unit.wortschatz.map((w, idx) => `
                             <div class="vocab-edit-row" id="vocabRow_${idx}" style="display: grid; grid-template-columns: 40px 1fr 1fr auto; gap: 0.5rem; margin-bottom: 0.5rem; align-items: center;">
                                 <span style="color: var(--text-secondary); text-align: center;">${idx + 1}</span>
-                                <input type="text" class="input-field vocab-de" value="${w.word}" placeholder="Almanca">
-                                <input type="text" class="input-field vocab-tr" value="${w.tr}" placeholder="Türkçe">
+                                <input type="text" class="input-field vocab-de" value="${w.word}" placeholder="Deutsch">
+                                <input type="text" class="input-field vocab-tr" value="${w.tr}" placeholder="Übersetzung">
                                 <button class="btn btn-secondary" onclick="removeVocabCard(${unitNum}, ${idx})" style="padding: 0.5rem; background: linear-gradient(135deg, #E74C3C, #C0392B);">❌</button>
                             </div>
                         `).join('')}
@@ -3260,15 +3254,15 @@
                     
                     <div style="margin-top: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
                         <button class="btn btn-secondary" onclick="addNewVocabCard(${unitNum})" style="flex: 1;">
-                            ➕ Yeni Kelime Kartı Ekle
+                            ➕ Neue Karte
                         </button>
                         <button class="btn btn-secondary" onclick="addMultipleVocabCards(${unitNum})" style="flex: 1;">
-                            ➕➕ Toplu Ekle (5 kart)
+                            ➕➕ Fünf Karten
                         </button>
                     </div>
                     
                     <button class="btn btn-primary" onclick="saveWortschatzToFirestore(${unitNum})" style="width: 100%; margin-top: 2rem; font-size: 1.2rem;">
-                        💾 Wortschatz'ı Kaydet
+                        💾 Wortschatz speichern
                     </button>
                 </div>
             `;
@@ -3290,8 +3284,8 @@
             newRow.style.cssText = 'display: grid; grid-template-columns: 40px 1fr 1fr auto; gap: 0.5rem; margin-bottom: 0.5rem; align-items: center;';
             newRow.innerHTML = `
                 <span style="color: var(--text-secondary); text-align: center;">${newIdx + 1}</span>
-                <input type="text" class="input-field vocab-de" value="" placeholder="Almanca">
-                <input type="text" class="input-field vocab-tr" value="" placeholder="Türkçe">
+                <input type="text" class="input-field vocab-de" value="" placeholder="Deutsch">
+                <input type="text" class="input-field vocab-tr" value="" placeholder="Übersetzung">
                 <button class="btn btn-secondary" onclick="removeVocabCard(${unitNum}, ${newIdx})" style="padding: 0.5rem; background: linear-gradient(135deg, #E74C3C, #C0392B);">❌</button>
             `;
             list.appendChild(newRow);
@@ -3312,7 +3306,7 @@
 
         // Remove vocab card
         function removeVocabCard(unitNum, idx) {
-            if (!confirm('Bu kelime kartını silmek istediğinizden emin misiniz?')) return;
+            if (!confirm('Diese Karte wirklich löschen?')) return;
             
             const unit = unitsData[unitNum];
             unit.wortschatz.splice(idx, 1);
@@ -3324,7 +3318,7 @@
         // Save Wortschatz to Firestore
         async function saveWortschatzToFirestore(unitNum) {
             if (!db) {
-                alert('❌ Firebase bağlantısı yok!');
+                alert('❌ Keine Firebase-Verbindung.');
                 return;
             }
             
@@ -3358,7 +3352,7 @@
                     }
                 }, { merge: true });
                 
-                alert(`✅ Wortschatz kaydedildi! (${newVocab.length} kelime)`);
+                alert(`✅ Wortschatz gespeichert! (${newVocab.length} Karten)`);
                 
                 // Reset flashcard state for this unit
                 if (window.flashcardState && window.flashcardState[unitNum]) {
@@ -3367,8 +3361,8 @@
                 }
                 
             } catch (error) {
-                console.error('❌ Kaydetme hatası:', error);
-                alert('❌ Hata: ' + error.message);
+                console.error('❌ Speichern fehlgeschlagen:', error);
+                alert('❌ Fehler: ' + error.message);
             }
         }
 
@@ -3381,8 +3375,8 @@
             newRow.className = 'dialogue-box';
             newRow.style.cssText = 'margin: 0.5rem 0; display: grid; grid-template-columns: 150px 1fr auto; gap: 0.5rem; align-items: center;';
             newRow.innerHTML = `
-                <input type="text" class="input-field" value="" id="dialogue_speaker_${idx}" placeholder="Konuşan">
-                <input type="text" class="input-field" value="" id="dialogue_text_${idx}" placeholder="Metin">
+                <input type="text" class="input-field" value="" id="dialogue_speaker_${idx}" placeholder="Sprecher/in">
+                <input type="text" class="input-field" value="" id="dialogue_text_${idx}" placeholder="Text">
                 <button class="btn btn-secondary" onclick="this.parentElement.remove()" style="padding: 0.5rem;">❌</button>
             `;
             list.appendChild(newRow);
@@ -3398,12 +3392,12 @@
         // Save unit changes to Firestore - FIXED: No nested arrays
         async function saveUnitChangesToFirestore(unitNum) {
             if (!db) {
-                alert('❌ Firebase bağlantısı yok!');
+                alert('❌ Keine Firebase-Verbindung.');
                 return;
             }
             
             if (!isTeacher) {
-                alert('❌ Bu özellik sadece öğretmenler içindir!');
+                alert('❌ Nur für Lehrkräfte.');
                 return;
             }
             
@@ -3411,7 +3405,7 @@
                 // Show loading state
                 const saveBtn = event.target;
                 const originalText = saveBtn.textContent;
-                saveBtn.textContent = '⏳ Kaydediliyor...';
+                saveBtn.textContent = '⏳ Wird gespeichert …';
                 saveBtn.disabled = true;
                 
                 // Collect all changes from form
@@ -3458,8 +3452,7 @@
                         skills: skills,
                         examples: examples,
                         // Convert dialogues to safe format
-                        dialogues: convertDialoguesForFirestore(unitsData[unitNum].kommunikation.dialogues),
-                        prompt: unitsData[unitNum].kommunikation.prompt || ''
+                        dialogues: convertDialoguesForFirestore(unitsData[unitNum].kommunikation.dialogues)
                     },
                     // Vocabulary is already array of objects - safe
                     wortschatz: allVocab,
@@ -3470,7 +3463,7 @@
                     updatedBy: studentInfo ? studentInfo.fullName : 'unknown'
                 };
                 
-                console.log('📤 Firestore\'a kaydedilen veri:', firestoreData);
+                console.log('📤 Daten für Firestore:', firestoreData);
                 
                 // Save to Firestore with merge
                 const contentDoc = db.collection('content').doc('units');
@@ -3478,31 +3471,31 @@
                     [unitNum]: firestoreData
                 }, { merge: true });
                 
-                console.log('✅ Firestore kaydı başarılı!');
+                console.log('✅ Firestore-Speichern erfolgreich');
                 
                 // Restore button
-                saveBtn.textContent = '✅ Kaydedildi!';
+                saveBtn.textContent = '✅ Gespeichert!';
                 setTimeout(() => {
                     saveBtn.textContent = originalText;
                     saveBtn.disabled = false;
                 }, 2000);
                 
-                alert('✅ Değişiklikler başarıyla Firestore\'a kaydedildi!\n\nTüm kullanıcılar anlık olarak güncellenecektir.');
+                alert('✅ Gespeichert! Alle Nutzer sehen die Änderung sofort.');
                 
                 // Reload the unit to show changes
                 showUnit(unitNum);
                 
             } catch (error) {
-                console.error('❌ Kaydetme hatası:', error);
-                console.error('Hata detayı:', error.message);
+                console.error('❌ Speichern fehlgeschlagen:', error);
+                console.error('Details:', error.message);
                 
                 // Restore button on error
                 if (event && event.target) {
-                    event.target.textContent = '💾 Firestore\'a Kaydet ve Yayınla';
+                    event.target.textContent = '💾 In Firestore speichern und veröffentlichen';
                     event.target.disabled = false;
                 }
                 
-                alert('❌ Kaydetme hatası!\n\n' + error.message + '\n\nLütfen tekrar deneyin.');
+                alert('❌ Speichern fehlgeschlagen!\n\n' + error.message + '\n\nBitte erneut versuchen.');
             }
         }
 
@@ -3514,29 +3507,24 @@
             const exerciseTypes = [
                 {
                     type: 'multiple',
-                    title: 'Çoktan Seçmeli / Multiple Choice',
+                    title: 'Multiple Choice',
                     icon: '📝'
                 },
                 {
-                    type: 'fillblank',
-                    title: 'Boşluk Doldurma / Fill in the Blank',
-                    icon: '✍️'
-                },
-                {
                     type: 'matching',
-                    title: 'Eşleştirme / Matching',
+                    title: 'Zuordnen',
                     icon: '🔗'
                 },
                 {
                     type: 'truefalse',
-                    title: 'Doğru-Yanlış / True-False',
+                    title: 'Richtig oder falsch?',
                     icon: '✓✗'
                 }
             ];
             
             content.innerHTML = `
-                <h2>✏️ Übungen / Alıştırmalar</h2>
-                <div class="score-display" id="exerciseScore">Puan / Points: ${score}</div>
+                <h2>✏️ Übungen</h2>
+                <div class="score-display" id="exerciseScore">Punkte: ${score}</div>
                 
                 ${exerciseTypes.map(et => `
                     <div class="unit-detail" style="margin: 2rem 0;">
@@ -3548,7 +3536,6 @@
             
             // Generate different exercise types
             generateMultipleChoiceEx();
-            generateFillBlankEx();
             generateMatchingEx();
             generateTrueFalseEx();
         }
@@ -3565,39 +3552,13 @@
                 
                 html += `
                     <div class="exercise-container">
-                        <div class="exercise-question">${idx + 1}. "${word.word}" ne anlama gelir?</div>
+                        <div class="exercise-question">${idx + 1}. Was bedeutet „${word.word}“?</div>
                         <div class="exercise-options">
                             ${options.map((opt, optIdx) => `
                                 <button class="option-btn" onclick="checkExAnswer('multi${idx}', ${optIdx}, ${options.indexOf(word.tr)})" 
                                         id="multi${idx}-${optIdx}">${opt}</button>
                             `).join('')}
                         </div>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-        }
-
-        function generateFillBlankEx() {
-            const unit = unitsData[currentUnit];
-            const container = document.getElementById('fillblankContainer');
-            const examples = unit.kommunikation.examples.slice(0, 2);
-            
-            let html = '';
-            examples.forEach((ex, idx) => {
-                const words = ex.split(' ');
-                const blankIdx = Math.min(2, Math.floor(Math.random() * words.length));
-                const correctWord = words[blankIdx];
-                words[blankIdx] = '______';
-                
-                html += `
-                    <div class="exercise-container">
-                        <div class="exercise-question">${idx + 1}. ${words.join(' ')}</div>
-                        <input type="text" class="input-field" id="fill${idx}" placeholder="Boş yere yazın...">
-                        <button class="btn btn-primary" onclick="checkFillBlank(${idx}, '${correctWord.toLowerCase()}')">
-                            Kontrol Et
-                        </button>
-                        <div id="fill${idx}Result"></div>
                     </div>
                 `;
             });
@@ -3623,7 +3584,7 @@
                         `).join('')}
                     </div>
                     <div>
-                        <h4>Türkçe</h4>
+                        <h4>Übersetzung</h4>
                         ${rightSide.map((w, idx) => `
                             <div class="match-item" onclick="selectMatch('right', ${idx}, '${w.word}')" id="rightMatch${idx}">
                                 ${w.tr}
@@ -3656,12 +3617,12 @@
                 if (matchSelection.leftWord === matchSelection.rightWord) {
                     document.getElementById(`leftMatch${matchSelection.left}`).classList.add('matched');
                     document.getElementById(`rightMatch${matchSelection.right}`).classList.add('matched');
-                    document.getElementById('matchResult').innerHTML = '<p style="color: var(--success); font-weight: bold;">✅ Doğru eşleştirme!</p>';
+                    document.getElementById('matchResult').innerHTML = '<p style="color: var(--success); font-weight: bold;">✅ Richtig!</p>';
                     
                     exerciseScores[currentUnit] = (exerciseScores[currentUnit] || 0) + 1;
                     updateExerciseScore();
                 } else {
-                    document.getElementById('matchResult').innerHTML = '<p style="color: var(--error); font-weight: bold;">❌ Yanlış eşleştirme, tekrar deneyin!</p>';
+                    document.getElementById('matchResult').innerHTML = '<p style="color: var(--error); font-weight: bold;">❌ Noch einmal versuchen!</p>';
                     setTimeout(() => {
                         document.querySelectorAll('.match-item.selected:not(.matched)').forEach(el => el.classList.remove('selected'));
                     }, 1000);
@@ -3676,8 +3637,8 @@
             const unit = unitsData[currentUnit];
             
             const statements = [
-                { text: `"${unit.wortschatz[0].word}" kelimesi "${unit.wortschatz[0].tr}" anlamına gelir.`, correct: true },
-                { text: `"${unit.wortschatz[1].word}" kelimesi "${unit.wortschatz[2].tr}" anlamına gelir.`, correct: false }
+                { text: `„${unit.wortschatz[0].word}“ heißt: ${unit.wortschatz[0].tr}.`, correct: true },
+                { text: `„${unit.wortschatz[1].word}“ heißt: ${unit.wortschatz[2].tr}.`, correct: false }
             ];
             
             container.innerHTML = statements.map((stmt, idx) => `
@@ -3685,10 +3646,10 @@
                     <div class="exercise-question">${idx + 1}. ${stmt.text}</div>
                     <div style="display: flex; gap: 1rem; margin-top: 1rem;">
                         <button class="option-btn" onclick="checkTrueFalse(${idx}, true, ${stmt.correct})" id="tf${idx}True">
-                            ✓ Doğru / Richtig
+                            ✓ Richtig
                         </button>
                         <button class="option-btn" onclick="checkTrueFalse(${idx}, false, ${stmt.correct})" id="tf${idx}False">
-                            ✗ Yanlış / Falsch
+                            ✗ Falsch
                         </button>
                     </div>
                 </div>
@@ -3716,22 +3677,6 @@
             }
         }
 
-        function checkFillBlank(idx, correct) {
-            const input = document.getElementById(`fill${idx}`);
-            const result = document.getElementById(`fill${idx}Result`);
-            const answer = input.value.toLowerCase().trim();
-            
-            if (answer === correct) {
-                result.innerHTML = '<p style="color: var(--success); font-weight: bold; margin-top: 1rem;">✅ Doğru!</p>';
-                exerciseScores[currentUnit] = (exerciseScores[currentUnit] || 0) + 1;
-                markContentCompleted(`u${currentUnit}:exercise:fill:${idx}`, currentUnit);
-                updateExerciseScore();
-                input.disabled = true;
-            } else {
-                result.innerHTML = '<p style="color: var(--error); font-weight: bold; margin-top: 1rem;">❌ Yanlış, tekrar deneyin!</p>';
-            }
-        }
-
         function checkTrueFalse(idx, answer, correct) {
             const trueBtn = document.getElementById(`tf${idx}True`);
             const falseBtn = document.getElementById(`tf${idx}False`);
@@ -3753,7 +3698,7 @@
         function updateExerciseScore() {
             const scoreEl = document.getElementById('exerciseScore');
             if (scoreEl) {
-                scoreEl.textContent = `Puan / Points: ${exerciseScores[currentUnit] || 0}`;
+                scoreEl.textContent = `Punkte: ${exerciseScores[currentUnit] || 0}`;
             }
             saveProgress();
             updateStudentInFirestore();
