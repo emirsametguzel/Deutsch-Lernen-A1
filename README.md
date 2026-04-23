@@ -1,4 +1,5 @@
 Deutsch Lernen A1 - Interactive German Learning Platform
+
 An interactive web-based German language learning platform for A1 level students, featuring real-time progress tracking, vocabulary flashcards, exercises, tests, and a comprehensive teacher dashboard.
 🎯 Overview
 Deutsch Lernen A1 is a full-featured language learning platform designed for students learning German at the A1 level. Built with HTML, CSS, and JavaScript, it integrates with Firebase for authentication, real-time data synchronization, and cloud storage.
