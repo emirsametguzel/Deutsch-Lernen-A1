@@ -1,0 +1,147 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function authEmail() {
+      // Firebase may expose email in different token shapes depending on provider.
+      return request.auth.token.email != null
+        ? request.auth.token.email
+        : (request.auth.token.firebase.identities.email != null
+          ? request.auth.token.firebase.identities.email[0]
+          : null);
+    }
+
+    function adminDoc() {
+      return get(/databases/$(database)/documents/config/admins);
+    }
+
+    function adminEmails() {
+      return adminDoc().data.emails;
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && authEmail() != null
+        && adminDoc().exists()
+        // IMPORTANT: Keep all emails in config/admins as lowercase to avoid case mismatch.
+        && (authEmail().lower() in adminEmails());
+    }
+
+    function validClassName(className) {
+      return className is string
+        && className in ['hazirlik_a', 'hazirlik_b', 'hazirlik_c'];
+    }
+
+    function incomingStudentClassIsValid() {
+      return !('class' in request.resource.data)
+        || validClassName(request.resource.data.class);
+    }
+
+    function validHomeworkPayload() {
+      return request.resource.data.keys().hasAll([
+          'title', 'content', 'targetType', 'target', 'unitId', 'deadlineAt', 'visibleTo', 'createdBy', 'createdAt'
+        ])
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.content is string
+        && request.resource.data.content.size() > 0
+        && request.resource.data.targetType in ['class', 'student']
+        && request.resource.data.target is string
+        && request.resource.data.target.size() > 0
+        && request.resource.data.unitId is string
+        && request.resource.data.unitId.size() > 0
+        && request.resource.data.deadlineAt is timestamp
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.visibleTo is list
+        && request.resource.data.visibleTo.size() > 0
+        && (
+          (request.resource.data.targetType == 'class' && validClassName(request.resource.data.target))
+          || (request.resource.data.targetType == 'student')
+        );
+    }
+
+    function canReadHomework() {
+      return isAdmin()
+        || (signedIn()
+          && resource.data.visibleTo is list
+          && request.auth.uid in resource.data.visibleTo);
+    }
+
+    function ownProgressDoc() {
+      return signedIn()
+        && request.resource.data.userId is string
+        && request.resource.data.userId == request.auth.uid;
+    }
+
+    // Admin allowlist config
+    match /config/admins {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    // Content doc used by the teacher panel
+    match /content/{docId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    // Students collection used by leaderboard and teacher panel
+    match /students/{studentId} {
+      allow create: if signedIn() && incomingStudentClassIsValid();
+      allow read: if isAdmin()
+        || (signedIn()
+          && resource.data.uid != null
+          && request.auth.uid == resource.data.uid);
+      allow update: if isAdmin()
+        || (signedIn()
+          && resource.data.uid != null
+          && request.auth.uid == resource.data.uid
+          && incomingStudentClassIsValid());
+      allow delete: if isAdmin()
+        || (signedIn()
+          && resource.data.uid != null
+          && request.auth.uid == resource.data.uid);
+    }
+
+    // Homeworks collection
+    match /homeworks/{homeworkId} {
+      allow create: if isAdmin() && validHomeworkPayload();
+      allow read: if canReadHomework();
+      allow update, delete: if isAdmin();
+    }
+
+    // Unit content map for automatic homework progress
+    match /units/{unitId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    // Completion events written automatically by the system
+    match /progress/{progressId} {
+      allow create: if ownProgressDoc()
+        && request.resource.data.keys().hasAll(['userId', 'contentId', 'unitId', 'completedAt'])
+        && request.resource.data.contentId is string
+        && request.resource.data.contentId.size() > 0
+        && request.resource.data.unitId is string
+        && request.resource.data.unitId.size() > 0
+        && request.resource.data.completedAt is timestamp;
+      allow update: if ownProgressDoc()
+        && request.resource.data.keys().hasAll(['userId', 'contentId', 'unitId', 'completedAt'])
+        && request.resource.data.contentId is string
+        && request.resource.data.contentId.size() > 0
+        && request.resource.data.unitId is string
+        && request.resource.data.unitId.size() > 0
+        && request.resource.data.completedAt is timestamp;
+      allow read: if isAdmin()
+        || (signedIn()
+          && resource.data.userId is string
+          && resource.data.userId == request.auth.uid);
+      allow delete: if isAdmin();
+    }
+  }
+}
+

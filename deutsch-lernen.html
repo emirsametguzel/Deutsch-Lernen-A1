@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deutsch Lernen A1 - Lernplattform für Müge Girgin</title>
+    <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+    <div id="authGate" class="auth-gate">
+        <div class="auth-card">
+            <h2 id="authTitle">Giriş Yap</h2>
+            <p id="authSubtitle">Devam etmek için hesabınızla giriş yapın</p>
+            <div id="authMessage" class="auth-message hidden"></div>
+
+            <form id="loginForm" onsubmit="event.preventDefault(); loginWithEmailPassword();">
+                <div class="form-group">
+                    <label for="loginEmail">E-posta</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Şifre</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button class="btn btn-primary auth-btn" type="submit">Giriş Yap</button>
+                <button class="btn btn-secondary auth-btn" type="button" onclick="showResetForm()">Şifremi Unuttum</button>
+                <button class="btn btn-dark auth-btn" type="button" onclick="showRegisterForm()">Kayıt Ol</button>
+                <button type="button" class="google-full-btn" onclick="loginWithGoogle()">
+                <div class="google-icon-wrapper">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google Logo">
+                </div>
+                <span class="google-btn-text">Google ile giriş yap</span>
+                </button>
+            </form>
+
+            <form id="registerForm" class="hidden" onsubmit="event.preventDefault(); registerWithEmailPassword();">
+                <div class="form-group"><label for="regFirstName">Ad</label><input type="text" id="regFirstName" required></div>
+                <div class="form-group"><label for="regLastName">Soyad</label><input type="text" id="regLastName" required></div>
+                <div class="form-group"><label for="regEmail">E-posta</label><input type="email" id="regEmail" required></div>
+                <div class="form-group">
+                    <label for="regClass">Sınıf</label>
+                    <select id="regClass" required>
+                        <option value="">Sınıf seçiniz...</option>
+                        <option value="hazirlik_a">hazirlik_a</option>
+                        <option value="hazirlik_b">hazirlik_b</option>
+                        <option value="hazirlik_c">hazirlik_c</option>
+                    </select>
+                </div>
+                <div class="form-group"><label for="regNumber">Numara</label><input type="text" id="regNumber" required></div>
+                <div class="form-group"><label for="regPassword">Şifre</label><input type="password" id="regPassword" minlength="6" required></div>
+                <div class="form-group"><label for="regPassword2">Şifre (Tekrar)</label><input type="password" id="regPassword2" minlength="6" required></div>
+                <button class="btn btn-primary auth-btn" type="submit">Hesap Oluştur</button>
+                <button class="btn btn-secondary auth-btn" type="button" onclick="showLoginForm()">Girişe Dön</button>
+            </form>
+
+            <form id="resetForm" class="hidden" onsubmit="event.preventDefault(); sendPasswordReset();">
+                <div class="form-group">
+                    <label for="resetEmail">E-posta</label>
+                    <input type="email" id="resetEmail" required>
+                </div>
+                <button class="btn btn-primary auth-btn" type="submit">Sıfırlama Maili Gönder</button>
+                <button class="btn btn-secondary auth-btn" type="button" onclick="showLoginForm()">Girişe Dön</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="appShell" class="hidden">
+    <div class="header">
+        <h1>🎓 Deutsch Lernen A1</h1>
+        <div class="subtitle">Interaktive Lernplattform für Müge Girgin</div>
+        <h1 style="color: #ff6b9d; text-shadow: rgba(0, 0, 0, 0.1) 2px 2px 4px;"><img src="logo.png" width="282" height="153" alt="" /></h1>
+        <div style="text-align: center;">
+            <div id="studentInfoDisplay"></div>
+        </div>
+        <div class="controls">
+            <button class="btn btn-secondary" onclick="showHome()">🏠 Ana Menü / Home</button>
+            <button class="btn btn-dark" onclick="toggleDarkMode()">🌙 Dark Mode</button>
+            <button class="btn btn-profile" onclick="showProfile()">👤 Profil</button>
+            <button class="btn btn-gold" onclick="showLeaderboard()">🏆 Leaderboard</button>
+            <button class="btn btn-teacher hidden" id="teacherBtn" onclick="showTeacherPanel()">👨‍🏫 Öğretmen Paneli</button>
+            <button class="btn btn-gold hidden" id="certificateBtn" onclick="showCertificate()">🎓 Sertifika</button>
+            <button class="btn btn-secondary" onclick="resetProgress()">🔄 Sıfırla</button>
+            <button class="btn btn-dark" onclick="logout()">🚪 Çıkış Yap</button>
+        </div>
+        <div class="progress-bar" id="globalProgress">
+            <div class="progress-fill" style="width: 0%;">0%</div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="breadcrumb" id="breadcrumb"><a onclick="showHome()">🏠 Ana Sayfa</a></div>
+        <div id="mainView"></div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="assets/firebase-init.js"></script>
+    <script src="assets/unitsData.js"></script>
+    <script src="assets/app.js"></script>
+
+    <footer style="text-align: center; margin-top: 50px;">
+        <img src="logo.png" alt="Logo" style="height: 200px; display: block; margin: 0 auto;" />
+        <div style="color: gray; font-size: 14px;">© 2026-Deutsch Lernen A1</div>
+    </footer>
+    </div>
+</body>
+</html>
