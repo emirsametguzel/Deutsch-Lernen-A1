@@ -120,18 +120,19 @@ Authentication: Email/Password + Google Sign-In
 samet.gt.tc
 
 📁 File Structure
-text
-deutsch-lernen/
-├── index.html                 # Redirect to main app
-├── deutsch-lernen.html        # Main application
-├── tts.php                    # Text-to-speech proxy
-├── assets/
-│   ├── styles.css            # All styling
-│   ├── app.js                # Main application logic
-│   ├── firebase-init.js      # Firebase configuration
-│   └── unitsData.js          # Curriculum data (9 units)
-├── logo.png                  # Site logo
-└── favicon.png               # Favicon
+    deutsch-lernen/
+    ├── index.html                 # Redirect to main app
+    ├── deutsch-lernen.html        # Main application
+    ├── tts.php                    # Text-to-speech proxy
+    ├── assets/
+    │   ├── styles.css             # All styling
+    │   ├── app.js                 # Main application logic
+    │   ├── firebase-init.js       # Firebase configuration
+    │   └── unitsData.js           # Curriculum data (9 units)
+    ├── logo.png                   # Site logo
+    └── favicon.png                # Favicon
+
+    
 🎮 How to Use
 Student Guide
 Register with email/password or Google
