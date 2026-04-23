@@ -1,0 +1,57 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+
+    function authEmail() {
+      return request.auth.token.email != null
+        ? request.auth.token.email
+        : (request.auth.token.firebase.identities.email != null
+          ? request.auth.token.firebase.identities.email[0]
+          : null);
+    }
+
+    function adminDoc() {
+      return get(/databases/$(database)/documents/config/admins);
+    }
+
+    // 🔥 SENİN UID BURADA (garanti admin)
+    function isHardcodedAdmin() {
+      return signedIn() && request.auth.uid == "UPISHoCvzsWR4ezuqQ8wJJYxWdC2";
+    }
+
+    function isAdmin() {
+      return isHardcodedAdmin() // 💥 önce buna bak
+        || (
+          signedIn()
+          && adminDoc().exists()
+          && (
+            (adminDoc().data.uids != null && request.auth.uid in adminDoc().data.uids)
+            ||
+            (authEmail() != null && adminDoc().data.emails != null && authEmail().lower() in adminDoc().data.emails)
+          )
+        );
+    }
+
+    match /config/admins {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    match /content/{docId} {
+      allow read: if signedIn();
+      allow write: if isAdmin(); // 🔥 artık UID de dahil
+    }
+
+    match /students/{studentId} {
+      allow create: if signedIn();
+      allow read: if signedIn();
+      allow update, delete: if isAdmin()
+        || (signedIn()
+          && resource.data.uid != null
+          && request.auth.uid == resource.data.uid);
+    }
+  }
+}
